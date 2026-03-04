@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// All requests now go through API Gateway on port 5000!
-const API_URL = 'http://localhost:5000/api';
+// All requests now go through API Gateway on port 5001!
+const API_URL = 'http://localhost:5001/api';
 
 const getToken = () => localStorage.getItem('token');
 

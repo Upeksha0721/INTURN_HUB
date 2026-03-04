@@ -45,6 +45,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', createProxyMiddleware({
   target: process.env.AUTH_SERVICE_URL,
   changeOrigin: true,
+  pathRewrite: { '^/api/auth': '/api/auth' },
   on: {
     error: (err, req, res) => {
       res.status(503).json({ message: 'Auth service unavailable' });
