@@ -5,9 +5,9 @@ A full-stack Internship Management System built with MERN Stack and Microservice
 | Member | Role | Service |
 |--------|------|---------|
 | Upeksha (Leader) | Auth + Frontend | auth-service (Port 5001) |
-| Member B | Vacancy Management | vacancy-service (Port 5002) |
-| Member C | Study Materials | study-material-service (Port 5003) |
-| Member D | Quiz Management | quiz-service (Port 5004) |
+| jayani | Vacancy Management | vacancy-service (Port 5002) |
+| diyana | Study Materials | study-material-service (Port 5003) |
+| ruwandi| Quiz Management | quiz-service (Port 5004) |
 
 ## 🏗️ Architecture
 - **Frontend:** React + Vite + Tailwind CSS (Port 5173)
