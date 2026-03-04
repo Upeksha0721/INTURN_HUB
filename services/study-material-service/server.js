@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
   res.send("Study Material Service Running");
 });
 
-app.use("/api/study-materials", studyMaterialRoutes);
+app.use('/api/study-materials', require('./routes/studyMaterial.routes'));
 
 const PORT = process.env.PORT || 5002;
 
