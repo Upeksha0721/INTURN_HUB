@@ -1,27 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const STUDY_API = 'http://localhost:5003/api/study-materials';
+
 export default function UploadMaterial() {
   const [form, setForm] = useState({ title: '', description: '', category: '', fileUrl: '' });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [materials, setMaterials] = useState([]);
-  const [tab, setTab] = useState('upload');
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [darkMode, setDarkMode] = useState(false);
-
-  const fetchMaterials = async () => {
-    try {
-      const res = await axios.get('http://localhost:5003/api/study-materials');
-      setMaterials(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => { fetchMaterials(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,87 +15,56 @@ export default function UploadMaterial() {
     setError('');
     setSuccess('');
     try {
-      await axios.post('http://localhost:5003/api/study-materials', form);
-      setSuccess('Material uploaded successfully!');
-      setForm({ title: '', description: '', category: '', fileUrl: '' });
-      fetchMaterials();
+      const token = localStorage.getItem('token');
+      const res = await fetch(STUDY_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess('Material uploaded successfully! ✅');
+        setForm({ title: '', description: '', category: '', fileUrl: '' });
+      } else {
+        setError(data.message || 'Upload failed');
+      }
     } catch (err) {
-      setError('Failed to upload material.');
+      setError('Failed to connect to study material service');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this material?')) return;
-    try {
-      await axios.delete(`http://localhost:5003/api/study-materials/${id}`);
-      setMaterials(materials.filter(m => m._id !== id));
-    } catch (err) {
-      alert('Failed to delete material.');
-    }
-  };
-
-  const handleEditSave = async (id) => {
-    try {
-      await axios.put(`http://localhost:5003/api/study-materials/${id}`, editForm);
-      setEditingId(null);
-      fetchMaterials();
-    } catch (err) {
-      alert('Failed to update material.');
-    }
-  };
-
-  const categories = [
-    { value: 'uiux', label: 'UI/UX Design', color: '#7c3aed', lightBg: '#f3e8ff', darkBg: 'rgba(124,58,237,0.2)' },
-    { value: 'frontend', label: 'Frontend', color: '#0369a1', lightBg: '#e0f2fe', darkBg: 'rgba(3,105,161,0.2)' },
-    { value: 'backend', label: 'Backend', color: '#166534', lightBg: '#dcfce7', darkBg: 'rgba(22,101,52,0.2)' },
-    { value: 'qa', label: 'QA Engineering', color: '#c2410c', lightBg: '#fff7ed', darkBg: 'rgba(194,65,12,0.2)' },
-    { value: 'database', label: 'Database', color: '#854d0e', lightBg: '#fef9c3', darkBg: 'rgba(133,77,14,0.2)' },
-    { value: 'devops', label: 'DevOps', color: '#475569', lightBg: '#f1f5f9', darkBg: 'rgba(71,85,105,0.2)' },
-    { value: 'other', label: 'Other', color: '#9d174d', lightBg: '#fce7f3', darkBg: 'rgba(157,23,77,0.2)' },
-  ];
-
-  const getCat = (val) => categories.find(c => c.value === val) || { label: val, color: '#6b7280', lightBg: '#f3f4f6', darkBg: 'rgba(107,114,128,0.2)' };
-
-  const d = darkMode;
-  const T = {
-    pageBg:       d ? '#0f172a' : '#f8fafc',
-    card:         d ? '#1e293b' : '#ffffff',
-    cardBorder:   d ? '#334155' : '#e2e8f0',
-    text:         d ? '#f1f5f9' : '#111827',
-    textSub:      d ? '#94a3b8' : '#6b7280',
-    textLabel:    d ? '#cbd5e1' : '#374151',
-    inputBg:      d ? '#0f172a'  : '#ffffff',
-    inputBorder:  d ? '#334155' : '#d1d5db',
-    inputText:    d ? '#f1f5f9' : '#111827',
-    tableAlt:     d ? '#172033' : '#f9fafb',
-    rowBorder:    d ? '#1e293b' : '#f3f4f6',
-    headBg:       d ? '#162032' : '#f8fafc',
-    mutedBtn:     d ? '#273548' : '#f1f5f9',
-    mutedBtnText: d ? '#94a3b8' : '#6b7280',
-  };
-
-  const inputStyle = {
-    width: '100%',
-    padding: '0.78rem 1rem',
-    background: T.inputBg,
-    border: `1.5px solid ${T.inputBorder}`,
-    borderRadius: '10px',
-    color: T.inputText,
-    fontSize: '0.9rem',
-    fontFamily: 'inherit',
-    outline: 'none',
-    boxSizing: 'border-box',
-  };
-
   return (
     <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", minHeight: '100vh', background: T.pageBg, padding: '2rem', transition: 'background 0.3s, color 0.3s' }}>
 
-      {/* ── Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.8rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <div style={{ width: 46, height: 46, borderRadius: '13px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 4px 14px rgba(124,58,237,0.3)' }}>📚</div>
+      <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 text-sm">
+            {success}
+          </div>
+        )}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input
+              type="text"
+              placeholder="e.g. React.js Fundamentals"
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+              required
+            />
+          </div>
           <div>
             <h1 style={{ color: T.text, fontSize: '1.75rem', fontWeight: 800, margin: 0, letterSpacing: '-0.4px' }}>Study Materials</h1>
             <p style={{ color: T.textSub, margin: 0, fontSize: '0.875rem' }}>Upload and manage resources for students</p>
@@ -135,17 +90,12 @@ export default function UploadMaterial() {
               <div style={{ color: T.textSub, fontSize: '0.75rem', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* ── Tabs ── */}
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.5rem', background: T.card, border: `1.5px solid ${T.cardBorder}`, borderRadius: '12px', padding: '0.35rem', width: 'fit-content' }}>
-        {[
-          { key: 'upload', label: '➕ Upload New' },
-          { key: 'manage', label: `📋 Manage (${materials.length})` },
-        ].map(tb => (
-          <button key={tb.key} onClick={() => setTab(tb.key)} style={{ padding: '0.58rem 1.3rem', borderRadius: '9px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.875rem', fontWeight: 700, transition: 'all 0.2s', background: tab === tb.key ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : 'transparent', color: tab === tb.key ? '#ffffff' : T.textSub, boxShadow: tab === tb.key ? '0 3px 10px rgba(124,58,237,0.3)' : 'none' }}>
-            {tb.label}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50"
+          >
+            {loading ? 'Uploading...' : 'Upload Material'}
           </button>
         ))}
       </div>
