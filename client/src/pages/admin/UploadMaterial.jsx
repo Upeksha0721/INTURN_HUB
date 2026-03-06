@@ -1,13 +1,40 @@
 import { useState } from 'react';
 
+const STUDY_API = 'http://localhost:5003/api/study-materials';
+
 export default function UploadMaterial() {
   const [form, setForm] = useState({ title: '', description: '', category: '', fileUrl: '' });
   const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccess('Material uploaded successfully! (Connect to study material service when Member C is done)');
-    setForm({ title: '', description: '', category: '', fileUrl: '' });
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(STUDY_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess('Material uploaded successfully! ✅');
+        setForm({ title: '', description: '', category: '', fileUrl: '' });
+      } else {
+        setError(data.message || 'Upload failed');
+      }
+    } catch (err) {
+      setError('Failed to connect to study material service');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,6 +50,12 @@ export default function UploadMaterial() {
             {success}
           </div>
         )}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -75,9 +108,10 @@ export default function UploadMaterial() {
           </div>
           <button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition-all"
+            disabled={loading}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50"
           >
-            Upload Material
+            {loading ? 'Uploading...' : 'Upload Material'}
           </button>
         </form>
       </div>

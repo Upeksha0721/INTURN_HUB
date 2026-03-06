@@ -19,10 +19,12 @@ export const getVacancies = () => axios.get(`${API_URL}/vacancies`, authHeaders(
 export const applyVacancy = (id) => axios.post(`${API_URL}/vacancies/${id}/apply`, {}, authHeaders());
 export const getMyApplications = () => axios.get(`${API_URL}/applications/my`, authHeaders());
 
-// Study Materials (ready for Member C)
-export const getMaterials = () => axios.get(`${API_URL}/materials`, authHeaders());
-
 // Quizzes (ready for Member D)
 export const getQuizzes = () => axios.get(`${API_URL}/quizzes`, authHeaders());
 export const submitQuiz = (id, answers) => axios.post(`${API_URL}/quizzes/${id}/submit`, answers, authHeaders());
 export const getMyProgress = () => axios.get(`${API_URL}/quizzes/progress/me`, authHeaders());
+
+// Study Materials
+export const getMaterials = () => axios.get(`${API_URL}/study-materials`, authHeaders());
+export const createMaterial = (data) => axios.post(`${API_URL}/study-materials`, data, authHeaders());
+export const deleteMaterial = (id) => axios.delete(`${API_URL}/study-materials/${id}`, authHeaders());
