@@ -1,6 +1,3 @@
-import { useState, useEffect } from 'react';
-import { getProfile } from '../../services/api';
-
 export default function ManageUsers() {
   const mockUsers = [
     { _id: '1', name: 'John Student', email: 'john@test.com', role: 'student', createdAt: '2026-03-01' },
