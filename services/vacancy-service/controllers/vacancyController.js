@@ -1,4 +1,5 @@
 const Vacancy = require('../models/vacancy');
+const Application = require('../models/Application');
 
 // Create a new vacancy
 const createVacancy = async (req, res) => {
@@ -79,10 +80,47 @@ const deleteVacancy = async (req, res) => {
     }
 };
 
+// Apply for a vacancy
+const applyVacancy = async (req, res) => {
+    try {
+        const vacancyId = req.params.id;
+        const studentId = req.user.id;
+        const studentName = req.user.name;
+
+        // Check if vacancy exists
+        const vacancy = await Vacancy.findById(vacancyId);
+        if (!vacancy) {
+            return res.status(404).json({ message: "Vacancy not found" });
+        }
+
+        // Check if already applied
+        const existingApplication = await Application.findOne({
+            vacancyId,
+            studentId
+        });
+
+        if (existingApplication) {
+            return res.status(400).json({ message: "You have already applied for this vacancy." });
+        }
+
+        const newApplication = new Application({
+            studentId,
+            studentName,
+            vacancyId
+        });
+
+        const savedApplication = await newApplication.save();
+        res.status(201).json(savedApplication);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to apply for vacancy", error: error.message });
+    }
+};
+
 module.exports = {
     createVacancy,
     getAllVacancies,
     getVacancyById,
     updateVacancy,
-    deleteVacancy
+    deleteVacancy,
+    applyVacancy
 };

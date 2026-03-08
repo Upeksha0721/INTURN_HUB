@@ -12,15 +12,21 @@ const app = express();
 app.use(cors());
 app.use(morgan('dev'));
 
+// Debug logging middleware
+app.use((req, res, next) => {
+  console.log(`[GATEWAY] ${req.method} ${req.originalUrl} -> ${req.url}`);
+  next();
+});
+
 // Health check
 app.get('/', (req, res) => {
   res.json({
     message: '🎓 InternHub API Gateway is running!',
     services: {
-      auth:    process.env.AUTH_SERVICE_URL,
+      auth: process.env.AUTH_SERVICE_URL,
       vacancy: process.env.VACANCY_SERVICE_URL,
-      study:   process.env.STUDY_SERVICE_URL,
-      quiz:    process.env.QUIZ_SERVICE_URL,
+      study: process.env.STUDY_SERVICE_URL,
+      quiz: process.env.QUIZ_SERVICE_URL,
     }
   });
 });
@@ -31,74 +37,77 @@ app.get('/health', (req, res) => {
     gateway: '✅ Running',
     port: process.env.PORT || 5000,
     services: {
-      'auth-service':           `${process.env.AUTH_SERVICE_URL}/api/auth`,
-      'vacancy-service':        `${process.env.VACANCY_SERVICE_URL}/api/vacancies`,
+      'auth-service': `${process.env.AUTH_SERVICE_URL}/api/auth`,
+      'vacancy-service': `${process.env.VACANCY_SERVICE_URL}/api/vacancies`,
       'study-material-service': `${process.env.STUDY_SERVICE_URL}/api/materials`,
-      'quiz-service':           `${process.env.QUIZ_SERVICE_URL}/api/quizzes`,
+      'quiz-service': `${process.env.QUIZ_SERVICE_URL}/api/quizzes`,
     }
   });
 });
 
 // ── Route Proxies ──────────────────────────────────────
 
-// Auth Service → http://localhost:5001
-app.use('/api/auth', createProxyMiddleware({
-  target: process.env.AUTH_SERVICE_URL,
+// ── Route Proxies ──────────────────────────────────────
+
+// ── Route Proxies ──────────────────────────────────────
+
+app.use(createProxyMiddleware({
+  target: 'http://127.0.0.1:5001', // Fallback
   changeOrigin: true,
-  pathRewrite: { '^/api/auth': '/api/auth' },
+  pathFilter: (path) => path.startsWith('/api/auth'),
+  pathRewrite: (path, req) => req.originalUrl,
   on: {
     error: (err, req, res) => {
-      res.status(503).json({ message: 'Auth service unavailable' });
+      console.error(`[GATEWAY ERROR] ${req.method} ${req.originalUrl}:`, err.message);
+      res.status(503).json({ message: 'Service unavailable', error: err.message });
+    },
+    proxyReq: (proxyReq, req, res) => {
+      console.log(`[GATEWAY PROXY] ${req.method} ${req.originalUrl} -> ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
     }
   }
 }));
 
-// Vacancy Service → http://localhost:5002
-app.use('/api/vacancies', createProxyMiddleware({
-  target: process.env.VACANCY_SERVICE_URL,
+app.use(createProxyMiddleware({
+  target: 'http://127.0.0.1:5002',
   changeOrigin: true,
+  pathFilter: (path) => path.startsWith('/api/vacancies') || path.startsWith('/api/applications'),
+  pathRewrite: (path, req) => req.originalUrl,
   on: {
     error: (err, req, res) => {
-      res.status(503).json({ message: 'Vacancy service unavailable' });
+      console.error(`[GATEWAY ERROR] ${req.method} ${req.originalUrl}:`, err.message);
+      res.status(503).json({ message: 'Service unavailable', error: err.message });
     }
   }
 }));
 
-app.use('/api/applications', createProxyMiddleware({
-  target: process.env.VACANCY_SERVICE_URL,
+app.use(createProxyMiddleware({
+  target: 'http://127.0.0.1:5003',
   changeOrigin: true,
+  pathFilter: (path) => path.startsWith('/api/materials'),
+  pathRewrite: (path, req) => req.originalUrl,
   on: {
     error: (err, req, res) => {
-      res.status(503).json({ message: 'Vacancy service unavailable' });
+      console.error(`[GATEWAY ERROR] ${req.method} ${req.originalUrl}:`, err.message);
+      res.status(503).json({ message: 'Service unavailable', error: err.message });
     }
   }
 }));
 
-// Study Material Service → http://localhost:5003
-app.use('/api/materials', createProxyMiddleware({
-  target: process.env.STUDY_SERVICE_URL,
+app.use(createProxyMiddleware({
+  target: 'http://127.0.0.1:5004',
   changeOrigin: true,
+  pathFilter: (path) => path.startsWith('/api/quizzes'),
+  pathRewrite: (path, req) => req.originalUrl,
   on: {
     error: (err, req, res) => {
-      res.status(503).json({ message: 'Study material service unavailable' });
-    }
-  }
-}));
-
-// Quiz Service → http://localhost:5004
-app.use('/api/quizzes', createProxyMiddleware({
-  target: process.env.QUIZ_SERVICE_URL,
-  changeOrigin: true,
-  on: {
-    error: (err, req, res) => {
-      res.status(503).json({ message: 'Quiz service unavailable' });
+      console.error(`[GATEWAY ERROR] ${req.method} ${req.originalUrl}:`, err.message);
+      res.status(503).json({ message: 'Service unavailable', error: err.message });
     }
   }
 }));
 
 // 404 handler
-// 404 handler
-app.use('*splat', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.originalUrl} not found` });
 });
 

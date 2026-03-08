@@ -12,9 +12,8 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-
-app.use('/api/vacancy', require('./routes/vacancyRoutes'));
-
+app.use('/api/vacancies', require('./routes/vacancyRoutes'));
+app.use('/api/applications', require('./routes/applicationRoutes'));
 app.get('/', (req, res) => {
   res.json({ message: 'Vacancy Service is running ✅' });
 });
