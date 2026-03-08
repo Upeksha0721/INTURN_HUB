@@ -12,6 +12,7 @@ import Quizzes from './pages/student/Quizzes';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageUsers from './pages/admin/ManageUsers';
 import PostVacancy from './pages/admin/PostVacancy';
+import ManageVacancies from './pages/admin/ManageVacancies';
 import ManageApplications from './pages/admin/ManageApplications';
 import UploadMaterial from './pages/admin/UploadMaterial';
 import CreateQuiz from './pages/admin/CreateQuiz';
@@ -78,6 +79,9 @@ function AppRoutes() {
       } />
       <Route path="/admin/post-vacancy" element={
         <ProtectedRoute adminOnly={true}><AdminLayout><PostVacancy /></AdminLayout></ProtectedRoute>
+      } />
+      <Route path="/admin/vacancies" element={
+        <ProtectedRoute adminOnly={true}><AdminLayout><ManageVacancies /></AdminLayout></ProtectedRoute>
       } />
       <Route path="/admin/applications" element={
         <ProtectedRoute adminOnly={true}><AdminLayout><ManageApplications /></AdminLayout></ProtectedRoute>

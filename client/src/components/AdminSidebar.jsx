@@ -2,12 +2,13 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { path: '/admin/dashboard',     label: '🏠 Dashboard' },
-  { path: '/admin/users',         label: '👥 Manage Users' },
-  { path: '/admin/post-vacancy',  label: '💼 Post Vacancy' },
-  { path: '/admin/applications',  label: '📋 Applications' },
+  { path: '/admin/dashboard', label: '🏠 Dashboard' },
+  { path: '/admin/users', label: '👥 Manage Users' },
+  { path: '/admin/post-vacancy', label: '➕ Post Vacancy' },
+  { path: '/admin/vacancies', label: '💼 Manage Vacancies' },
+  { path: '/admin/applications', label: '📋 Applications' },
   { path: '/admin/upload-material', label: '📚 Upload Material' },
-  { path: '/admin/create-quiz',   label: '🧠 Create Quiz' },
+  { path: '/admin/create-quiz', label: '🧠 Create Quiz' },
 ];
 
 export default function AdminSidebar() {
@@ -47,10 +48,9 @@ export default function AdminSidebar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `block px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-red-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              `block px-4 py-3 rounded-lg text-sm font-medium transition-all ${isActive
+                ? 'bg-red-600 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
               }`
             }
           >
