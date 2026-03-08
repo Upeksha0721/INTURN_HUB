@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// All requests now go through API Gateway on port 5001!
-const API_URL = 'http://localhost:5001/api';
+// All requests now go through API Gateway on port 5000!
+const API_URL = 'http://localhost:5000/api';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -14,8 +14,11 @@ export const registerUser = (data) => axios.post(`${API_URL}/auth/register`, dat
 export const loginUser = (data) => axios.post(`${API_URL}/auth/login`, data);
 export const getProfile = () => axios.get(`${API_URL}/auth/profile`, authHeaders());
 
-// Vacancies (ready for Member B)
+// Vacancies
 export const getVacancies = () => axios.get(`${API_URL}/vacancies`, authHeaders());
+export const createVacancy = (data) => axios.post(`${API_URL}/vacancies`, data, authHeaders());
+export const updateVacancy = (id, data) => axios.put(`${API_URL}/vacancies/${id}`, data, authHeaders());
+export const deleteVacancy = (id) => axios.delete(`${API_URL}/vacancies/${id}`, authHeaders());
 export const applyVacancy = (id) => axios.post(`${API_URL}/vacancies/${id}/apply`, {}, authHeaders());
 export const getMyApplications = () => axios.get(`${API_URL}/applications/my`, authHeaders());
 
