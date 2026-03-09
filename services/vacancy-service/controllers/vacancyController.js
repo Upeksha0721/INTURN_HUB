@@ -4,25 +4,29 @@ const Application = require('../models/Application');
 // Create a new vacancy
 const createVacancy = async (req, res) => {
     try {
-        const { title, company, description, location, deadline } = req.body;
-        const postedBy = req.user.id;
+       const { title, company, description, location, deadline, imageUrl, salary, jobType, skills } = req.body;
+     const postedBy = req.user.id;
 
-        if (!title || !company) {
-            return res.status(400).json({ message: "Title and company are required." });
-        }
+    if (!title || !company) {
+    return res.status(400).json({ message: "Title and company are required." });
+    }
 
-        if (deadline && new Date(deadline) < new Date().setHours(0, 0, 0, 0)) {
-            return res.status(400).json({ message: "Deadline cannot be in the past." });
-        }
+    if (deadline && new Date(deadline) < new Date().setHours(0, 0, 0, 0)) {
+    return res.status(400).json({ message: "Deadline cannot be in the past." });
+    }
 
-        const newVacancy = new Vacancy({
-            title,
-            company,
-            description,
-            location,
-            deadline,
-            postedBy
-        });
+    const newVacancy = new Vacancy({
+      title,
+      company,
+      description,
+      location,
+      deadline,
+      postedBy,
+      imageUrl: imageUrl || '',
+      salary: salary || '',
+      jobType: jobType || 'Internship',
+      skills: skills || []
+    });
 
         const savedVacancy = await newVacancy.save();
         res.status(201).json(savedVacancy);
