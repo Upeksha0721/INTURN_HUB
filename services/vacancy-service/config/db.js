@@ -5,7 +5,9 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      family: 4
+    });
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
