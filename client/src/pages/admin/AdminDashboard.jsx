@@ -1,23 +1,81 @@
-import { useAuth } from '../../context/AuthContext';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import Spinner from '../../components/Spinner';
+
+const AUTH_API = 'http://localhost:5001/api/auth';
+const STUDY_API = 'http://localhost:5003/api/study-materials';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState({ students: 0, materials: 0 });
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem('token');
 
-  const stats = [
-    { label: 'Total Students', value: '24', icon: '👥', color: 'bg-blue-500' },
-    { label: 'Active Vacancies', value: '12', icon: '💼', color: 'bg-green-500' },
-    { label: 'Applications', value: '36', icon: '📋', color: 'bg-yellow-500' },
-    { label: 'Study Materials', value: '8', icon: '📚', color: 'bg-purple-500' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch users
+        const usersRes = await fetch(`${AUTH_API}/users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const users = await usersRes.json();
+        const students = users.filter(u => u.role === 'student');
+
+        // Fetch materials
+        const materialsRes = await fetch(`${STUDY_API}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const materials = await materialsRes.json();
+
+        setStats({
+          students: students.length,
+          materials: materials.length
+        });
+
+        // Build activity feed from real data
+        const userActivities = students.slice(0, 3).map(u => ({
+          id: u._id,
+          icon: '👤',
+          text: `${u.name} registered as student`,
+          time: new Date(u.createdAt).toLocaleDateString(),
+          color: 'bg-blue-100'
+        }));
+
+        const materialActivities = materials.slice(0, 3).map(m => ({
+          id: m._id,
+          icon: '📚',
+          text: `Study material "${m.title}" uploaded`,
+          time: new Date(m.createdAt).toLocaleDateString(),
+          color: 'bg-purple-100'
+        }));
+
+        // Combine and sort by date
+        const allActivities = [...userActivities, ...materialActivities]
+          .sort((a, b) => new Date(b.time) - new Date(a.time))
+          .slice(0, 6);
+
+        setActivities(allActivities);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const quickActions = [
-    { label: 'Post New Vacancy', icon: '➕', path: '/admin/post-vacancy', color: 'bg-green-50 hover:bg-green-100 text-green-700' },
-    { label: 'View Applications', icon: '📄', path: '/admin/applications', color: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' },
-    { label: 'Upload Material', icon: '📤', path: '/admin/upload-material', color: 'bg-purple-50 hover:bg-purple-100 text-purple-700' },
-    { label: 'Create Quiz', icon: '✏️', path: '/admin/create-quiz', color: 'bg-blue-50 hover:bg-blue-100 text-blue-700' },
+    { label: 'Post New Vacancy', icon: '➕', color: 'bg-green-50 hover:bg-green-100 text-green-700', path: '/admin/post-vacancy' },
+    { label: 'View Applications', icon: '📋', color: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700', path: '/admin/applications' },
+    { label: 'Upload Material', icon: '📤', color: 'bg-purple-50 hover:bg-purple-100 text-purple-700', path: '/admin/upload-material' },
+    { label: 'Create Quiz', icon: '✏️', color: 'bg-pink-50 hover:bg-pink-100 text-pink-700', path: '/admin/create-quiz' },
   ];
+
+  if (loading) return <Spinner message="Loading dashboard..." />;
 
   return (
     <div className="p-8">
@@ -30,32 +88,49 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
-            <div className={`${stat.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl`}>
-              {stat.icon}
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-              <p className="text-gray-500 text-sm">{stat.label}</p>
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">👥</div>
+          <div>
+            <div className="text-2xl font-bold text-gray-800">{stats.students}</div>
+            <div className="text-gray-500 text-sm">Total Students</div>
           </div>
-        ))}
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl">💼</div>
+          <div>
+            <div className="text-2xl font-bold text-gray-800">0</div>
+            <div className="text-gray-500 text-sm">Active Vacancies</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+          <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl">📋</div>
+          <div>
+            <div className="text-2xl font-bold text-gray-800">0</div>
+            <div className="text-gray-500 text-sm">Applications</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+          <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">📚</div>
+          <div>
+            <div className="text-2xl font-bold text-gray-800">{stats.materials}</div>
+            <div className="text-gray-500 text-sm">Study Materials</div>
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickActions.map((action) => (
+          {quickActions.map(action => (
             <button
               key={action.label}
               onClick={() => navigate(action.path)}
-              className={`flex flex-col items-center p-4 rounded-xl transition-all cursor-pointer ${action.color}`}
+              className={`${action.color} p-4 rounded-xl text-center transition-all`}
             >
-              <span className="text-3xl mb-2">{action.icon}</span>
-              <span className="text-sm font-medium text-center">{action.label}</span>
+              <div className="text-3xl mb-2">{action.icon}</div>
+              <div className="text-sm font-medium">{action.label}</div>
             </button>
           ))}
         </div>
@@ -63,23 +138,24 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Recent Activity</h2>
-        <div className="space-y-3">
-          {[
-            { text: 'New student registered', time: '2 mins ago', icon: '👤' },
-            { text: 'New application submitted', time: '15 mins ago', icon: '📋' },
-            { text: 'Vacancy posted successfully', time: '1 hour ago', icon: '💼' },
-            { text: 'Study material uploaded', time: '2 hours ago', icon: '📚' },
-          ].map((activity, index) => (
-            <div key={index} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-              <span className="text-2xl">{activity.icon}</span>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-700">{activity.text}</p>
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h2>
+        {activities.length === 0 ? (
+          <p className="text-gray-400 text-center py-8">No recent activity</p>
+        ) : (
+          <div className="space-y-4">
+            {activities.map(activity => (
+              <div key={activity.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50">
+                <div className={`w-10 h-10 ${activity.color} rounded-full flex items-center justify-center text-lg`}>
+                  {activity.icon}
+                </div>
+                <div className="flex-1">
+                  <p className="text-gray-700 text-sm font-medium">{activity.text}</p>
+                  <p className="text-gray-400 text-xs">{activity.time}</p>
+                </div>
               </div>
-              <p className="text-xs text-gray-400">{activity.time}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
