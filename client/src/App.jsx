@@ -16,6 +16,7 @@ import ManageVacancies from './pages/admin/ManageVacancies';
 import ManageApplications from './pages/admin/ManageApplications';
 import UploadMaterial from './pages/admin/UploadMaterial';
 import CreateQuiz from './pages/admin/CreateQuiz';
+import LandingPage from './pages/LandingPage';
 
 const StudentLayout = ({ children }) => (
   <div className="flex bg-gray-50 min-h-screen">
@@ -49,7 +50,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
