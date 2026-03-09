@@ -17,6 +17,7 @@ import ManageApplications from './pages/admin/ManageApplications';
 import UploadMaterial from './pages/admin/UploadMaterial';
 import CreateQuiz from './pages/admin/CreateQuiz';
 import LandingPage from './pages/LandingPage';
+import Messages from './pages/admin/Messages';
 
 const StudentLayout = ({ children }) => (
   <div className="flex bg-gray-50 min-h-screen">
@@ -92,6 +93,9 @@ function AppRoutes() {
       } />
       <Route path="/admin/create-quiz" element={
         <ProtectedRoute adminOnly={true}><AdminLayout><CreateQuiz /></AdminLayout></ProtectedRoute>
+      } />
+      <Route path="/admin/messages" element={
+        <ProtectedRoute adminOnly={true}><AdminLayout><Messages /></AdminLayout></ProtectedRoute>
       } />
     </Routes>
   );

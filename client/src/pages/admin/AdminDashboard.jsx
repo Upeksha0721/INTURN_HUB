@@ -5,11 +5,12 @@ import Spinner from '../../components/Spinner';
 
 const AUTH_API = 'http://localhost:5001/api/auth';
 const STUDY_API = 'http://localhost:5003/api/study-materials';
+const VACANCY_API = 'http://localhost:5002/api/vacancies';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ students: 0, materials: 0 });
+  const [stats, setStats] = useState({ students: 0, materials: 0, vacancies: 0 });
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
@@ -25,37 +26,53 @@ export default function AdminDashboard() {
         const students = users.filter(u => u.role === 'student');
 
         // Fetch materials
-        const materialsRes = await fetch(`${STUDY_API}`, {
+        const materialsRes = await fetch(STUDY_API, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const materials = await materialsRes.json();
 
+        // Fetch vacancies
+        const vacancyRes = await fetch(VACANCY_API, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const vacancies = await vacancyRes.json();
+
         setStats({
           students: students.length,
-          materials: materials.length
+          materials: materials.length,
+          vacancies: vacancies.length
         });
 
-        // Build activity feed from real data
-        const userActivities = students.slice(0, 3).map(u => ({
+        // Build activity feed
+        const userActivities = students.slice(0, 2).map(u => ({
           id: u._id,
           icon: '👤',
           text: `${u.name} registered as student`,
-          time: new Date(u.createdAt).toLocaleDateString(),
+          time: new Date(u.createdAt),
           color: 'bg-blue-100'
         }));
 
-        const materialActivities = materials.slice(0, 3).map(m => ({
+        const materialActivities = materials.slice(0, 2).map(m => ({
           id: m._id,
           icon: '📚',
           text: `Study material "${m.title}" uploaded`,
-          time: new Date(m.createdAt).toLocaleDateString(),
+          time: new Date(m.createdAt),
           color: 'bg-purple-100'
         }));
 
-        // Combine and sort by date
-        const allActivities = [...userActivities, ...materialActivities]
-          .sort((a, b) => new Date(b.time) - new Date(a.time))
-          .slice(0, 6);
+        const vacancyActivities = vacancies.slice(0, 2).map(v => ({
+          id: v._id,
+          icon: '💼',
+          text: `Vacancy "${v.title}" posted at ${v.company}`,
+          time: new Date(v.createdAt),
+          color: 'bg-green-100'
+        }));
+
+        // Combine and sort by date newest first
+        const allActivities = [...userActivities, ...materialActivities, ...vacancyActivities]
+          .sort((a, b) => b.time - a.time)
+          .slice(0, 6)
+          .map(a => ({ ...a, time: a.time.toLocaleDateString() }));
 
         setActivities(allActivities);
       } catch (err) {
@@ -81,9 +98,7 @@ export default function AdminDashboard() {
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Welcome, {user?.name}! 👋
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800">Welcome, {user?.name}! 👋</h1>
         <p className="text-gray-500 mt-1">Here's your InternHub admin overview.</p>
       </div>
 
@@ -99,7 +114,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
           <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl">💼</div>
           <div>
-            <div className="text-2xl font-bold text-gray-800">0</div>
+            <div className="text-2xl font-bold text-gray-800">{stats.vacancies}</div>
             <div className="text-gray-500 text-sm">Active Vacancies</div>
           </div>
         </div>
@@ -143,8 +158,8 @@ export default function AdminDashboard() {
           <p className="text-gray-400 text-center py-8">No recent activity</p>
         ) : (
           <div className="space-y-4">
-            {activities.map(activity => (
-              <div key={activity.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50">
+            {activities.map((activity, index) => (
+              <div key={index} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50">
                 <div className={`w-10 h-10 ${activity.color} rounded-full flex items-center justify-center text-lg`}>
                   {activity.icon}
                 </div>

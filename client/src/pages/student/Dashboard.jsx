@@ -5,11 +5,12 @@ import Spinner from '../../components/Spinner';
 
 const STUDY_API = 'http://localhost:5003/api/study-materials';
 const AUTH_API = 'http://localhost:5001/api/auth';
+const VACANCY_API = 'http://localhost:5002/api/vacancies';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ materials: 0 });
+  const [stats, setStats] = useState({ materials: 0, vacancies: 0 });
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
@@ -17,18 +18,28 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch materials count
+        // Fetch materials
         const materialsRes = await fetch(STUDY_API, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const materials = await materialsRes.json();
-        setStats({ materials: materials.length });
+
+        // Fetch vacancies
+        const vacancyRes = await fetch(VACANCY_API, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const vacancies = await vacancyRes.json();
 
         // Fetch profile
         const profileRes = await fetch(`${AUTH_API}/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const profileData = await profileRes.json();
+
+        setStats({
+          materials: materials.length,
+          vacancies: vacancies.length
+        });
         setProfile(profileData);
       } catch (err) {
         console.error('Failed to fetch data:', err);
@@ -64,7 +75,6 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-4">My Profile</h2>
           <div className="flex flex-col items-center text-center">
-            {/* Avatar */}
             <div className="w-20 h-20 rounded-full bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold mb-4">
               {profile?.name?.charAt(0).toUpperCase()}
             </div>
@@ -89,7 +99,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">💼</div>
             <div>
-              <div className="text-2xl font-bold text-gray-800">0</div>
+              <div className="text-2xl font-bold text-gray-800">{stats.vacancies}</div>
               <div className="text-gray-500 text-sm">Available Vacancies</div>
             </div>
           </div>

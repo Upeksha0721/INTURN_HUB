@@ -9,6 +9,7 @@ const navItems = [
   { path: '/admin/applications', label: '📋 Applications' },
   { path: '/admin/upload-material', label: '📚 Upload Material' },
   { path: '/admin/create-quiz', label: '🧠 Create Quiz' },
+  { path: '/admin/messages', label: '📬 Messages' },
 ];
 
 export default function AdminSidebar() {
@@ -42,7 +43,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Nav Links */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.path}

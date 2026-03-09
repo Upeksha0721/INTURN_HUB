@@ -1,7 +1,38 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+const [contactSuccess, setContactSuccess] = useState(false);
+const [contactError, setContactError] = useState('');
+const [contactLoading, setContactLoading] = useState(false);
+
+const handleContactSubmit = async () => {
+  if (!contactForm.name || !contactForm.email || !contactForm.message) {
+    setContactError('All fields are required!');
+    return;
+  }
+  setContactLoading(true);
+  setContactError('');
+  try {
+    const res = await fetch('http://localhost:5001/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(contactForm)
+    });
+    if (res.ok) {
+      setContactSuccess(true);
+      setContactForm({ name: '', email: '', message: '' });
+    } else {
+      setContactError('Failed to send message. Try again!');
+    }
+  } catch (err) {
+    setContactError('Failed to send message. Try again!');
+  } finally {
+    setContactLoading(false);
+  }
+};
 
   const features = [
     { icon: '💼', title: 'Browse Internships', desc: 'Explore hundreds of internship opportunities from top companies across Sri Lanka.' },
@@ -159,48 +190,68 @@ export default function LandingPage() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 px-6 bg-gray-800/50">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">Contact Us</h2>
-          <p className="text-gray-400 text-lg mb-10">Have questions? We'd love to hear from you!</p>
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-8">
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Your Name"
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm"
-              />
-              <input
-                type="email"
-                placeholder="Your Email"
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm"
-              />
-              <textarea
-                rows={4}
-                placeholder="Your Message"
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm resize-none"
-              />
-              <button className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-all">
-                Send Message 📨
-              </button>
-            </div>
-            <div className="mt-6 pt-6 border-t border-gray-700 grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl mb-1">📧</div>
-                <div className="text-gray-400 text-xs">internhub@gmail.com</div>
-              </div>
-              <div>
-                <div className="text-2xl mb-1">📍</div>
-                <div className="text-gray-400 text-xs">SLIIT, Sri Lanka</div>
-              </div>
-              <div>
-                <div className="text-2xl mb-1">📱</div>
-                <div className="text-gray-400 text-xs">+94 11 123 4567</div>
-              </div>
-            </div>
-          </div>
+<section id="contact" className="py-20 px-6 bg-gray-800/50">
+  <div className="max-w-2xl mx-auto text-center">
+    <h2 className="text-4xl font-bold text-white mb-4">Contact Us</h2>
+    <p className="text-gray-400 text-lg mb-10">Have questions? We'd love to hear from you!</p>
+    <div className="bg-gray-800 border border-gray-700 rounded-xl p-8">
+      {contactSuccess && (
+        <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg mb-4 text-sm">
+          ✅ Message sent successfully! We'll get back to you soon.
         </div>
-      </section>
+      )}
+      {contactError && (
+        <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-4 text-sm">
+          ❌ {contactError}
+        </div>
+      )}
+      <div className="space-y-4">
+        <input
+          type="text"
+          placeholder="Your Name"
+          value={contactForm.name}
+          onChange={e => setContactForm({ ...contactForm, name: e.target.value })}
+          className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm"
+        />
+        <input
+          type="email"
+          placeholder="Your Email"
+          value={contactForm.email}
+          onChange={e => setContactForm({ ...contactForm, email: e.target.value })}
+          className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm"
+        />
+        <textarea
+          rows={4}
+          placeholder="Your Message"
+          value={contactForm.message}
+          onChange={e => setContactForm({ ...contactForm, message: e.target.value })}
+          className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm resize-none"
+        />
+        <button
+          onClick={handleContactSubmit}
+          disabled={contactLoading}
+          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50"
+        >
+          {contactLoading ? 'Sending...' : 'Send Message 📨'}
+        </button>
+      </div>
+      <div className="mt-6 pt-6 border-t border-gray-700 grid grid-cols-3 gap-4 text-center">
+        <div>
+          <div className="text-2xl mb-1">📧</div>
+          <div className="text-gray-400 text-xs">internhub@gmail.com</div>
+        </div>
+        <div>
+          <div className="text-2xl mb-1">📍</div>
+          <div className="text-gray-400 text-xs">SLIIT, Sri Lanka</div>
+        </div>
+        <div>
+          <div className="text-2xl mb-1">📱</div>
+          <div className="text-gray-400 text-xs">+94 11 123 4567</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Footer */}
       <footer className="py-10 px-6 border-t border-gray-800">
