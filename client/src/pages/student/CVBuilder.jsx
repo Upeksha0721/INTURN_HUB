@@ -4,6 +4,158 @@ import html2canvas from 'html2canvas';
 
 const CV_API = 'http://localhost:5001/api/cv';
 
+const emptyCV = {
+  name: '', email: '', phone: '', address: '', linkedin: '',
+  objective: '',
+  education: [{ degree: '', institution: '', year: '', gpa: '' }],
+  experience: [{ title: '', company: '', duration: '', description: '' }],
+  skills: '', softSkills: '',
+  projects: [{ name: '', description: '', tech: '' }],
+  certifications: [{ name: '', institution: '', year: '' }],
+  references: [{ name: '', designation: '', organization: '', contact: '' }],
+};
+
+// Reusable CV Document component — used for both preview and PDF capture
+function CVDocument({ cv, headerColor }) {
+  const sectionHeading = {
+    fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a',
+    textTransform: 'uppercase', letterSpacing: '1px',
+    borderBottom: '2px solid #ea580c', paddingBottom: '4px',
+    marginBottom: '8px', display: 'block', width: '100%'
+  };
+
+  return (
+    <div style={{
+      fontFamily: 'Arial, sans-serif',
+      background: '#ffffff',
+      width: '210mm',
+      minHeight: '297mm',
+      boxSizing: 'border-box',
+    }}>
+      {/* Header */}
+      <div style={{ background: headerColor, padding: '32px 40px', boxSizing: 'border-box' }}>
+        <h1 style={{ color: '#ffffff', fontSize: '18px', fontWeight: 'bold', margin: 0, letterSpacing: '0.5px' }}>
+          {cv.name || 'Your Name'}
+        </h1>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '10px' }}>
+          {cv.email    && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>✉ {cv.email}</span>}
+          {cv.phone    && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>☎ {cv.phone}</span>}
+          {cv.address  && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>⌂ {cv.address}</span>}
+          {cv.linkedin && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>in {cv.linkedin}</span>}
+        </div>
+      </div>
+
+      <div style={{ padding: '24px 40px', boxSizing: 'border-box', width: '100%' }}>
+
+        {cv.objective && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>Career Objective</h2>
+            <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.7', margin: 0, textAlign: 'justify' }}>{cv.objective}</p>
+          </div>
+        )}
+
+        {cv.education.some(e => e.degree) && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>Education</h2>
+            {cv.education.filter(e => e.degree).map((edu, i) => (
+              <div key={i} style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{edu.degree}</p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>{edu.year}</p>
+                </div>
+                <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>{edu.institution}</p>
+                {edu.gpa && <p style={{ fontSize: '12px', color: '#ea580c', margin: 0 }}>GPA: {edu.gpa}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {cv.experience.some(e => e.title) && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>Experience</h2>
+            {cv.experience.filter(e => e.title).map((exp, i) => (
+              <div key={i} style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{exp.title}</p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>{exp.duration}</p>
+                </div>
+                <p style={{ fontSize: '12px', color: '#ea580c', fontWeight: '600', margin: '3px 0' }}>{exp.company}</p>
+                {exp.description && <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0', lineHeight: '1.6', textAlign: 'justify' }}>{exp.description}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {cv.skills && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>Technical Skills</h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {cv.skills.split(',').map((skill, i) => (
+                <span key={i} style={{ padding: '3px 10px', background: '#dbeafe', color: '#1e40af', borderRadius: '4px', fontSize: '12px' }}>{skill.trim()}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cv.softSkills && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>Soft Skills</h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {cv.softSkills.split(',').map((skill, i) => (
+                <span key={i} style={{ padding: '3px 10px', background: '#ffedd5', color: '#9a3412', borderRadius: '4px', fontSize: '12px' }}>{skill.trim()}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cv.projects.some(p => p.name) && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>Projects</h2>
+            {cv.projects.filter(p => p.name).map((proj, i) => (
+              <div key={i} style={{ marginBottom: '10px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{proj.name}</p>
+                {proj.tech && <p style={{ fontSize: '12px', color: '#ea580c', margin: '3px 0' }}>Tech: {proj.tech}</p>}
+                {proj.description && <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0', lineHeight: '1.6', textAlign: 'justify' }}>{proj.description}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {cv.certifications?.some(c => c.name) && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>Courses & Certifications</h2>
+            {cv.certifications.filter(c => c.name).map((cert, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{cert.name}</p>
+                  <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>{cert.institution}</p>
+                </div>
+                <p style={{ fontSize: '12px', color: '#ea580c', margin: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>{cert.year}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {cv.references?.some(r => r.name) && (
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={sectionHeading}>References</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {cv.references.filter(r => r.name).map((ref, i) => (
+                <div key={i} style={{ background: '#f9fafb', borderRadius: '8px', padding: '12px' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{ref.name}</p>
+                  <p style={{ fontSize: '12px', color: '#ea580c', margin: '3px 0' }}>{ref.designation}</p>
+                  <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>{ref.organization}</p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{ref.contact}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function CVBuilder() {
   const [activeTab, setActiveTab] = useState('builder');
   const [downloading, setDownloading] = useState(false);
@@ -11,19 +163,11 @@ export default function CVBuilder() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [loadingCV, setLoadingCV] = useState(true);
   const [headerColor, setHeaderColor] = useState('#1e3a8a');
-  const cvRef = useRef();
+  const [versions, setVersions] = useState([]);
+  // Separate ref for the hidden full-size PDF capture element
+  const pdfRef = useRef();
   const token = localStorage.getItem('token');
-
-  const [cv, setCv] = useState({
-    name: '', email: '', phone: '', address: '', linkedin: '',
-    objective: '',
-    education: [{ degree: '', institution: '', year: '', gpa: '' }],
-    experience: [{ title: '', company: '', duration: '', description: '' }],
-    skills: '', softSkills: '',
-    projects: [{ name: '', description: '', tech: '' }],
-    certifications: [{ name: '', institution: '', year: '' }],
-    references: [{ name: '', designation: '', organization: '', contact: '' }],
-  });
+  const [cv, setCv] = useState(emptyCV);
 
   useEffect(() => {
     const loadCV = async () => {
@@ -41,6 +185,7 @@ export default function CVBuilder() {
             certifications: data.certifications?.length ? data.certifications : [{ name: '', institution: '', year: '' }],
             references: data.references?.length ? data.references : [{ name: '', designation: '', organization: '', contact: '' }],
           });
+          setVersions(data.versions || []);
         }
       } catch (err) { console.error('Failed to load CV'); }
       finally { setLoadingCV(false); }
@@ -60,6 +205,19 @@ export default function CVBuilder() {
   const updateCertification = (i, f, v) => { const u = [...cv.certifications]; u[i][f] = v; setCv(p => ({ ...p, certifications: u })); };
   const updateReference = (i, f, v) => { const u = [...cv.references]; u[i][f] = v; setCv(p => ({ ...p, references: u })); };
 
+  const loadVersion = (version) => {
+    setCv({
+      name: version.data.name || '', email: version.data.email || '', phone: version.data.phone || '',
+      address: version.data.address || '', linkedin: version.data.linkedin || '', objective: version.data.objective || '',
+      education: version.data.education?.length ? version.data.education : [{ degree: '', institution: '', year: '', gpa: '' }],
+      experience: version.data.experience?.length ? version.data.experience : [{ title: '', company: '', duration: '', description: '' }],
+      skills: version.data.skills || '', softSkills: version.data.softSkills || '',
+      projects: version.data.projects?.length ? version.data.projects : [{ name: '', description: '', tech: '' }],
+      certifications: version.data.certifications?.length ? version.data.certifications : [{ name: '', institution: '', year: '' }],
+      references: version.data.references?.length ? version.data.references : [{ name: '', designation: '', organization: '', contact: '' }],
+    });
+  };
+
   const saveCV = async () => {
     setSaving(true);
     try {
@@ -68,7 +226,12 @@ export default function CVBuilder() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(cv)
       });
-      if (res.ok) { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); }
+      if (res.ok) {
+        const data = await res.json();
+        setVersions(data.cv.versions || []);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
     } catch (err) { console.error('Failed to save CV'); }
     finally { setSaving(false); }
   };
@@ -76,17 +239,31 @@ export default function CVBuilder() {
   const downloadPDF = async () => {
     setDownloading(true);
     try {
-      const element = cvRef.current;
+      // Temporarily make the hidden element visible for capture
+      const element = pdfRef.current;
+      element.style.display = 'block';
+
+      // Wait a tick for the browser to render it
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const canvas = await html2canvas(element, {
-        scale: 2, useCORS: true, allowTaint: false,
-        backgroundColor: '#ffffff', logging: false,
-        imageTimeout: 0, removeContainer: true, foreignObjectRendering: false,
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        // Do NOT pass width/height — let it use the element's natural size
       });
+
+      // Hide again
+      element.style.display = 'none';
+
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       const pageHeight = pdf.internal.pageSize.getHeight();
+
       if (pdfHeight > pageHeight) {
         let yOffset = 0;
         let remaining = pdfHeight;
@@ -99,35 +276,29 @@ export default function CVBuilder() {
       } else {
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       }
+
       pdf.save(`${cv.name.replace(/\s+/g, '_') || 'My'}_CV.pdf`);
+      setCv(emptyCV);
     } catch (err) {
       alert('PDF failed: ' + err.message);
-    } finally { setDownloading(false); }
+    } finally {
+      setDownloading(false);
+    }
   };
 
-  const S = {
-    section: { marginBottom: '14px', width: '100%' },
-    heading: { fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '2px solid #ea580c', paddingBottom: '3px', marginBottom: '6px', display: 'block', width: '100%' },
-    row: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' },
-    bold11: { fontSize: '11px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 },
-    gray11: { fontSize: '11px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', marginLeft: '8px' },
-    dark11: { fontSize: '11px', color: '#4b5563', margin: '2px 0' },
-    orange11: { fontSize: '11px', color: '#ea580c', margin: '2px 0' },
-  };
+  const tips = [
+    { icon: '📝', title: 'Keep it concise', desc: 'Limit your CV to 1-2 pages.' },
+    { icon: '🎯', title: 'Tailor for each job', desc: 'Use keywords from the job description.' },
+    { icon: '📊', title: 'Quantify achievements', desc: 'Use numbers to show impact.' },
+    { icon: '✅', title: 'Proofread carefully', desc: 'Always proofread multiple times.' },
+    { icon: '🔗', title: 'Add LinkedIn', desc: 'Keep your LinkedIn up to date.' },
+    { icon: '💼', title: 'List relevant skills', desc: 'Include both technical and soft skills.' },
+  ];
 
   const templates = [
     { name: 'Professional Blue', color: 'from-blue-800 to-blue-600', desc: 'Clean and corporate style' },
     { name: 'Modern Orange', color: 'from-orange-600 to-orange-400', desc: 'Bold and creative style' },
     { name: 'Classic Dark', color: 'from-gray-800 to-gray-600', desc: 'Traditional professional style' },
-  ];
-
-  const tips = [
-    { icon: '📝', title: 'Keep it concise', desc: 'Limit your CV to 1-2 pages. Recruiters spend only 6-8 seconds on first review.' },
-    { icon: '🎯', title: 'Tailor for each job', desc: 'Customize your CV for each application using keywords from the job description.' },
-    { icon: '📊', title: 'Quantify achievements', desc: 'Use numbers to show impact. E.g., "Increased sales by 30%" instead of "Increased sales".' },
-    { icon: '✅', title: 'Proofread carefully', desc: 'Spelling mistakes can instantly disqualify you. Always proofread multiple times.' },
-    { icon: '🔗', title: 'Add LinkedIn', desc: "Include your LinkedIn profile URL. Make sure it's up to date with your CV." },
-    { icon: '💼', title: 'List relevant skills', desc: 'Include both technical and soft skills relevant to the role you are applying for.' },
   ];
 
   if (loadingCV) return (
@@ -140,6 +311,23 @@ export default function CVBuilder() {
 
   return (
     <div className="p-8">
+      {/* 
+        HIDDEN PDF CAPTURE ELEMENT — rendered at real A4 size, off-screen.
+        html2canvas reads this; no CSS transforms applied.
+      */}
+      <div
+        ref={pdfRef}
+        style={{
+          display: 'none',
+          position: 'fixed',
+          top: 0,
+          left: '-9999px',
+          zIndex: -1,
+        }}
+      >
+        <CVDocument cv={cv} headerColor={headerColor} />
+      </div>
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">📄 CV Builder</h1>
@@ -161,10 +349,10 @@ export default function CVBuilder() {
       </div>
 
       {activeTab === 'builder' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* FORM */}
-          <div className="space-y-5">
+          <div className="lg:col-span-2 space-y-5">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-800 mb-4">👤 Personal Information</h2>
               <div className="space-y-3">
@@ -276,157 +464,76 @@ export default function CVBuilder() {
               ))}
             </div>
 
+            {/* Color Picker */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
+              <span className="text-sm text-gray-600 font-medium">Header Color:</span>
+              <input type="color" value={headerColor} onChange={e => setHeaderColor(e.target.value)}
+                style={{ width: '40px', height: '40px', borderRadius: '8px', border: 'none', cursor: 'pointer', padding: '2px' }} />
+              <span className="text-xs text-gray-400">Pick your CV header color</span>
+            </div>
+
             <button onClick={saveCV} disabled={saving || !cv.name}
               className="w-full py-3 bg-white border-2 border-blue-800 text-blue-800 hover:bg-blue-50 font-bold rounded-2xl transition-all disabled:opacity-50">
               {saving ? '⏳ Saving...' : '💾 Save CV'}
             </button>
             <button onClick={downloadPDF} disabled={downloading || !cv.name}
               className="w-full py-4 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-2xl transition-all shadow-lg disabled:opacity-50 text-lg">
-              {downloading ? '⏳ Generating PDF...' : '⬇️ Download CV as PDF'}
+              {downloading ? '⏳ Generating PDF...' : '⬇️ Download & Clear CV'}
             </button>
           </div>
 
-          {/* CV PREVIEW */}
-          <div className="sticky top-6">
-            {/* Color Picker Header */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 flex items-center justify-between">
-              <p className="text-sm text-gray-500">👁️ Live Preview</p>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Header Color:</span>
-                <input
-                  type="color"
-                  value={headerColor}
-                  onChange={e => setHeaderColor(e.target.value)}
-                  style={{width: '32px', height: '32px', borderRadius: '8px', border: 'none', cursor: 'pointer', padding: '2px'}}
-                />
+          {/* RIGHT COLUMN */}
+          <div className="space-y-4">
+
+            {/* A4 CV Preview — uses CSS scale for display only, NOT for PDF */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
+              <p className="text-xs text-gray-500 text-center mb-2">👁️ Live Preview (A4)</p>
+              <div style={{ overflow: 'hidden', height: '380px', position: 'relative' }}>
+                <div style={{ transform: 'scale(0.42)', transformOrigin: 'top left', width: '238%' }}>
+                  <CVDocument cv={cv} headerColor={headerColor} />
+                </div>
               </div>
             </div>
 
-            <div ref={cvRef} style={{fontFamily: 'Arial, sans-serif', background: '#ffffff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', width: '100%'}}>
-
-              {/* Header */}
-              <div style={{background: headerColor, padding: '24px 32px', width: '100%', boxSizing: 'border-box'}}>
-                <h1 style={{color: '#ffffff', fontSize: '22px', fontWeight: 'bold', margin: 0}}>{cv.name || 'Your Name'}</h1>
-                <div style={{display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '8px'}}>
-                  {cv.email && <span style={{color: '#bfdbfe', fontSize: '11px'}}>✉ {cv.email}</span>}
-                  {cv.phone && <span style={{color: '#bfdbfe', fontSize: '11px'}}>☎ {cv.phone}</span>}
-                  {cv.address && <span style={{color: '#bfdbfe', fontSize: '11px'}}>⌂ {cv.address}</span>}
-                  {cv.linkedin && <span style={{color: '#bfdbfe', fontSize: '11px'}}>in {cv.linkedin}</span>}
+            {/* CV Versions */}
+            {versions.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <h3 className="text-sm font-bold text-gray-800 mb-3">📁 Saved Versions</h3>
+                <div className="space-y-2">
+                  {[...versions].reverse().map((v, i) => (
+                    <button key={i} onClick={() => loadVersion(v)}
+                      className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-blue-50 rounded-xl border border-gray-100 hover:border-blue-200 transition-all text-left">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">v{v.versionNumber} — {v.data.name || 'Unnamed'}</p>
+                        <p className="text-xs text-gray-400">{new Date(v.savedAt).toLocaleDateString()} {new Date(v.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                      <span className="text-blue-600 text-xs font-medium">Load →</span>
+                    </button>
+                  ))}
                 </div>
               </div>
+            )}
 
-              <div style={{padding: '20px 24px', boxSizing: 'border-box', width: '100%'}}>
-
-                {cv.objective && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>Career Objective</h2>
-                    <p style={{fontSize: '11px', color: '#4b5563', lineHeight: '1.6', margin: 0}}>{cv.objective}</p>
-                  </div>
-                )}
-
-                {cv.education.some(e => e.degree) && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>Education</h2>
-                    {cv.education.filter(e => e.degree).map((edu, i) => (
-                      <div key={i} style={{marginBottom: '8px'}}>
-                        <div style={S.row}>
-                          <p style={S.bold11}>{edu.degree}</p>
-                          <p style={S.gray11}>{edu.year}</p>
-                        </div>
-                        <p style={S.dark11}>{edu.institution}</p>
-                        {edu.gpa && <p style={S.orange11}>GPA: {edu.gpa}</p>}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {cv.experience.some(e => e.title) && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>Experience</h2>
-                    {cv.experience.filter(e => e.title).map((exp, i) => (
-                      <div key={i} style={{marginBottom: '8px'}}>
-                        <div style={S.row}>
-                          <p style={S.bold11}>{exp.title}</p>
-                          <p style={S.gray11}>{exp.duration}</p>
-                        </div>
-                        <p style={{...S.orange11, fontWeight: '500'}}>{exp.company}</p>
-                        {exp.description && <p style={S.dark11}>{exp.description}</p>}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {cv.skills && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>Technical Skills</h2>
-                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'flex-start'}}>
-                      {cv.skills.split(',').map((skill, i) => (
-                        <span key={i} style={{padding: '2px 8px', background: '#dbeafe', color: '#1e40af', borderRadius: '4px', fontSize: '10px', display: 'inline-block'}}>{skill.trim()}</span>
-                      ))}
+            {/* CV Tips */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <h3 className="text-sm font-bold text-gray-800 mb-3">💡 CV Tips</h3>
+              <div className="space-y-3">
+                {tips.map((tip, i) => (
+                  <div key={i} className="flex gap-3 p-2 bg-gray-50 rounded-xl">
+                    <span className="text-lg shrink-0">{tip.icon}</span>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-800">{tip.title}</p>
+                      <p className="text-xs text-gray-500">{tip.desc}</p>
                     </div>
                   </div>
-                )}
-
-                {cv.softSkills && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>Soft Skills</h2>
-                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'flex-start'}}>
-                      {cv.softSkills.split(',').map((skill, i) => (
-                        <span key={i} style={{padding: '2px 8px', background: '#ffedd5', color: '#9a3412', borderRadius: '4px', fontSize: '10px', display: 'inline-block'}}>{skill.trim()}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {cv.projects.some(p => p.name) && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>Projects</h2>
-                    {cv.projects.filter(p => p.name).map((proj, i) => (
-                      <div key={i} style={{marginBottom: '8px'}}>
-                        <p style={S.bold11}>{proj.name}</p>
-                        {proj.tech && <p style={S.orange11}>Tech: {proj.tech}</p>}
-                        {proj.description && <p style={S.dark11}>{proj.description}</p>}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {cv.certifications?.some(c => c.name) && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>Courses & Certifications</h2>
-                    {cv.certifications.filter(c => c.name).map((cert, i) => (
-                      <div key={i} style={{...S.row, marginBottom: '6px'}}>
-                        <div style={{flex: 1}}>
-                          <p style={S.bold11}>{cert.name}</p>
-                          <p style={S.dark11}>{cert.institution}</p>
-                        </div>
-                        <p style={{...S.orange11, marginLeft: '8px', whiteSpace: 'nowrap'}}>{cert.year}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {cv.references?.some(r => r.name) && (
-                  <div style={S.section}>
-                    <h2 style={S.heading}>References</h2>
-                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px'}}>
-                      {cv.references.filter(r => r.name).map((ref, i) => (
-                        <div key={i} style={{background: '#f9fafb', borderRadius: '6px', padding: '8px'}}>
-                          <p style={S.bold11}>{ref.name}</p>
-                          <p style={S.orange11}>{ref.designation}</p>
-                          <p style={S.dark11}>{ref.organization}</p>
-                          <p style={{...S.gray11, margin: 0}}>{ref.contact}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* TIPS TAB */}
       {activeTab === 'tips' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tips.map((tip, i) => (
@@ -437,13 +544,14 @@ export default function CVBuilder() {
             </div>
           ))}
           <div className="md:col-span-2 lg:col-span-3 rounded-2xl p-6 text-white"
-            style={{background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)'}}>
+            style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)' }}>
             <h3 className="text-xl font-bold mb-2">🌟 Pro Tip for SLIIT Students</h3>
-            <p className="text-blue-100">Use InternHub's CV Builder to create a professional PDF CV in minutes. Fill in your details, preview it live, and download it ready to send to employers!</p>
+            <p className="text-blue-100">Use InternHub's CV Builder to create a professional PDF CV in minutes!</p>
           </div>
         </div>
       )}
 
+      {/* TEMPLATES TAB */}
       {activeTab === 'templates' && (
         <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -464,7 +572,7 @@ export default function CVBuilder() {
             ))}
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center">
-            <p className="text-blue-700 font-medium">💡 Currently all templates use our InternHub Blue & Orange theme. More templates coming soon!</p>
+            <p className="text-blue-700 font-medium">💡 More templates coming soon!</p>
           </div>
         </div>
       )}

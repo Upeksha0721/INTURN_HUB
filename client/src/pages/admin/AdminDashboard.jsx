@@ -127,7 +127,7 @@ export default function AdminDashboard() {
           backgroundPosition: 'center'
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/92 via-blue-800/88 to-orange-600/82"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/92 via-blue-800/88 to-orange-00/82"></div>
         <div className="relative z-10 max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <p className="text-orange-300 text-sm font-medium mb-1">⚙️ Admin Panel</p>

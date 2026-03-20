@@ -67,7 +67,7 @@ export default function Dashboard() {
           backgroundPosition: 'center'
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/85 to-orange-600/80"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/85 to-orange-00/80"></div>
         <div className="relative z-10 max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <p className="text-blue-200 text-sm font-medium mb-1">Student Portal</p>
@@ -111,86 +111,50 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Profile Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="h-20 bg-gradient-to-r from-blue-900 to-orange-600"></div>
-            <div className="px-6 pb-6">
-              <div className="flex items-end gap-4 -mt-8 mb-4">
-                <div className="w-16 h-16 rounded-2xl bg-blue-800 border-4 border-white flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                  {profile?.name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="mb-1">
-                  <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                    {profile?.role}
-                  </span>
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">{profile?.name}</h3>
-              <p className="text-gray-500 text-sm mt-1">{profile?.email}</p>
-              <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Member since</span>
-                  <span className="text-gray-700 font-medium">
-                    {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Status</span>
-                  <span className="text-green-600 font-medium flex items-center gap-1">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span> Active
-                  </span>
-                </div>
-              </div>
-            </div>
+        {/* Recent Vacancies — full width */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-bold text-gray-800">Recent Vacancies</h2>
+            <button
+              onClick={() => navigate('/student/vacancies')}
+              className="text-blue-700 text-sm font-medium hover:text-orange-600 transition-colors"
+            >
+              View All →
+            </button>
           </div>
-
-          {/* Recent Vacancies */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-gray-800">Recent Vacancies</h2>
-              <button
-                onClick={() => navigate('/student/vacancies')}
-                className="text-blue-700 text-sm font-medium hover:text-orange-600 transition-colors"
-              >
-                View All →
-              </button>
+          {recentVacancies.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <div className="text-4xl mb-2">💼</div>
+              <p>No vacancies available</p>
             </div>
-            {recentVacancies.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <div className="text-4xl mb-2">💼</div>
-                <p>No vacancies available</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recentVacancies.map(v => (
-                  <div
-                    key={v._id}
-                    className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition-all cursor-pointer border border-transparent hover:border-blue-100"
-                    onClick={() => navigate('/student/vacancies')}
-                  >
-                    {v.imageUrl ? (
-                      <img src={v.imageUrl} alt={v.company} className="w-12 h-12 rounded-xl object-cover" />
-                    ) : (
-                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">💼</div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 truncate">{v.title}</p>
-                      <p className="text-gray-500 text-sm">{v.company} • {v.location}</p>
-                    </div>
-                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium whitespace-nowrap">
-                      {v.jobType || 'Internship'}
-                    </span>
+          ) : (
+            <div className="space-y-3">
+              {recentVacancies.map(v => (
+                <div
+                  key={v._id}
+                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition-all cursor-pointer border border-transparent hover:border-blue-100"
+                  onClick={() => navigate('/student/vacancies')}
+                >
+                  {v.imageUrl ? (
+                    <img src={v.imageUrl} alt={v.company} className="w-12 h-12 rounded-xl object-cover" />
+                  ) : (
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">💼</div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-800 truncate">{v.title}</p>
+                    <p className="text-gray-500 text-sm">{v.company} • {v.location}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium whitespace-nowrap">
+                    {v.jobType || 'Internship'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-lg font-bold text-gray-800 mb-5">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map(action => (
@@ -208,7 +172,7 @@ export default function Dashboard() {
 
         {/* Bottom Stats Bar */}
         <div className="mt-6 rounded-2xl p-6 text-white"
-          style={{background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)'}}>
+          style={{background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #F68048 100%)'}}>
           <div className="grid grid-cols-3 gap-6 text-center">
             <div>
               <div className="text-3xl font-bold">{stats.vacancies}</div>

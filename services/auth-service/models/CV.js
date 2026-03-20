@@ -11,7 +11,11 @@ const cvSchema = new mongoose.Schema({
   education: { type: Array, default: [] },
   experience: { type: Array, default: [] },
   skills: { type: String, default: '' },
+  softSkills: { type: String, default: '' },
   projects: { type: Array, default: [] },
+  certifications: { type: Array, default: [] },
+  references: { type: Array, default: [] },
+  versions: { type: Array, default: [] },
 }, { timestamps: true });
 
 module.exports = mongoose.model('CV', cvSchema);

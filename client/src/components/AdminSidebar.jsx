@@ -28,7 +28,7 @@ export default function AdminSidebar() {
       {/* Sidebar */}
       <div
         className={`h-screen ${collapsed ? 'w-20' : 'w-64'} text-white flex flex-col fixed left-0 top-0 transition-all duration-300 z-40`}
-        style={{background: 'linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)'}}
+        style={{background: 'linear-gradient(180deg, #0a1943 100%, #1d4ed8 40%, #F68048 100%)'}}
       >
         {/* Logo + Toggle */}
         <div className={`p-4 border-b border-white/10 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
@@ -77,7 +77,7 @@ export default function AdminSidebar() {
                   collapsed ? 'justify-center' : ''
                 } ${
                   isActive
-                    ? 'bg-orange-500/80 text-white shadow-lg shadow-orange-900/50 backdrop-blur-sm'
+                    ? 'bg-orange-400/80 text-white shadow-lg shadow-orange-900/50 backdrop-blur-sm'
                     : 'text-blue-100 hover:bg-white/10 hover:text-white'
                 }`
               }
@@ -93,7 +93,7 @@ export default function AdminSidebar() {
           <button
             onClick={handleLogout}
             title={collapsed ? 'Logout' : ''}
-            className={`w-full px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}
+            className={`w-full px-3 py-3 bg-orange-400 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}
           >
             <span className="text-xl">🚪</span>
             {!collapsed && <span>Logout</span>}
