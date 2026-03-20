@@ -1,32 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createMaterial } from '../../services/api';
+
+const STUDY_API = 'http://localhost:5003/api/study-materials';
 
 export default function UploadMaterial() {
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    category: '',
-    fileUrl: ''
+    title: '', description: '', category: '', fileUrl: ''
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recentMaterials, setRecentMaterials] = useState([]);
+  const token = localStorage.getItem('token');
 
   const categories = [
-    { value: 'programming', label: 'Programming' },
-    { value: 'design', label: 'Design' },
-    { value: 'business', label: 'Business' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'data-science', label: 'Data Science' },
-    { value: 'other', label: 'Other' }
+    { value: 'frontend', label: '🎨 Frontend' },
+    { value: 'backend', label: '⚙️ Backend' },
+    { value: 'database', label: '🗄️ Database' },
+    { value: 'devops', label: '🚀 DevOps' },
+    { value: 'other', label: '📦 Other' }
   ];
+
+  const categoryColor = (cat) => {
+    const colors = {
+      frontend: 'bg-blue-100 text-blue-700',
+      backend: 'bg-green-100 text-green-700',
+      database: 'bg-yellow-100 text-yellow-700',
+      devops: 'bg-red-100 text-red-700',
+      other: 'bg-gray-100 text-gray-700'
+    };
+    return colors[cat] || 'bg-gray-100 text-gray-700';
+  };
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        const res = await fetch(STUDY_API, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setRecentMaterials(data.slice(0, 5));
+      } catch (err) {
+        console.error('Failed to fetch materials');
+      }
+    };
+    fetchRecent();
+  }, [success]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setSuccess('');
     setError('');
-
     try {
       await createMaterial(form);
       setSuccess('Material uploaded successfully!');
@@ -45,102 +70,123 @@ export default function UploadMaterial() {
         <p className="text-gray-500 mt-1">Add new study materials for students to access.</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            {success}
-          </div>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            {error}
-          </div>
-        )}
+        {/* Form - Left Side */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+              ✅ {success}
+            </div>
+          )}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+              ❌ {error}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
-              type="text"
-              placeholder="e.g. React.js Fundamentals"
-              value={form.title}
-              onChange={e => setForm({ ...form, title: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+              <input
+                type="text"
+                placeholder="e.g. React.js Fundamentals"
+                value={form.title}
+                onChange={e => setForm({ ...form, title: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select
-              value={form.category}
-              onChange={e => setForm({ ...form, category: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              required
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <select
+                value={form.category}
+                onChange={e => setForm({ ...form, category: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map(cat => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* File URL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">File URL</label>
+              <input
+                type="url"
+                placeholder="https://drive.google.com/file/... or https://example.com/material.pdf"
+                value={form.fileUrl}
+                onChange={e => setForm({ ...form, fileUrl: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea
+                placeholder="Describe what students will learn from this material..."
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-semibold py-3.5 rounded-xl transition-all disabled:opacity-50 shadow-lg"
             >
-              <option value="">Select a category</option>
-              {categories.map(cat => (
-                <option key={cat.value} value={cat.value}>{cat.label}</option>
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Uploading...
+                </span>
+              ) : '📤 Upload Material'}
+            </button>
+          </form>
+        </div>
+
+        {/* Recent Materials - Right Side */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Recently Uploaded</h2>
+          <p className="text-gray-400 text-sm mb-5">Last 5 materials added</p>
+
+          {recentMaterials.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <div className="text-4xl mb-2">📚</div>
+              <p className="text-sm">No materials yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentMaterials.map((m, index) => (
+                <div key={m._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold text-sm shrink-0">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-800 text-sm truncate">{m.title}</p>
+                       <p className="text-gray-400 text-xs mt-0.5">
+                         🕒 {new Date(m.createdAt).toLocaleDateString()} {new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                       </p>
+                      </div>
+                  <span className="w-2 h-2 bg-orange-400 rounded-full shrink-0"></span>
+                </div>
               ))}
-            </select>
-          </div>
+            </div>
+          )}
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">File URL</label>
-            <input
-              type="url"
-              placeholder="https://drive.google.com/file/... or https://example.com/material.pdf"
-              value={form.fileUrl}
-              onChange={e => setForm({ ...form, fileUrl: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              placeholder="Describe what students will learn from this material..."
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-              rows={4}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Uploading...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                </svg>
-                Upload Material
-              </>
-            )}
-          </button>
-        </form>
       </div>
     </div>
   );
 }
-

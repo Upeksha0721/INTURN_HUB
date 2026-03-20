@@ -8,6 +8,7 @@ const navItems = [
   { path: '/student/applications',    label: 'My Applications', icon: '📋' },
   { path: '/student/study-materials', label: 'Study Materials', icon: '📚' },
   { path: '/student/quizzes',         label: 'Quizzes',         icon: '🧠' },
+  { path: '/student/cv-builder',      label: 'CV Builder',      icon: '📄' },
 ];
 
 export default function Sidebar() {
@@ -22,46 +23,47 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Sidebar */}
-      <div className={`h-screen ${collapsed ? 'w-20' : 'w-64'} text-white flex flex-col fixed left-0 top-0 transition-all duration-300 z-40`} style={{background: 'linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)'}}>
-
+      <div
+        className={`h-screen ${collapsed ? 'w-20' : 'w-64'} text-white flex flex-col fixed left-0 top-0 transition-all duration-300 z-40`}
+        style={{background: 'linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)'}}
+      >
         {/* Logo + Toggle */}
-        <div className={`p-4 border-b border-indigo-700 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`p-4 border-b border-white/10 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
             <div>
               <h1 className="text-xl font-bold text-white">🎓 InternHub</h1>
-              <p className="text-indigo-300 text-xs mt-0.5">Student Portal</p>
+              <p className="text-blue-200 text-xs mt-0.5">Student Portal</p>
             </div>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="w-9 h-9 rounded-xl bg-indigo-700 hover:bg-indigo-600 flex items-center justify-center transition-all text-white text-lg"
+            className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-white text-lg"
           >
             {collapsed ? '→' : '←'}
           </button>
         </div>
 
         {/* User Info */}
-        <div className={`p-4 border-b border-indigo-700 ${collapsed ? 'flex justify-center' : ''}`}>
+        <div className={`p-4 border-b border-white/10 ${collapsed ? 'flex justify-center' : ''}`}>
           {collapsed ? (
-            <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-lg">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-lg shrink-0">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg shrink-0">
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
               <div className="overflow-hidden">
                 <p className="font-semibold text-sm truncate">{user?.name}</p>
-                <p className="text-indigo-300 text-xs truncate">{user?.email}</p>
+                <p className="text-blue-200 text-xs truncate">{user?.email}</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Nav Links */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto scrollbar-hide">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -71,9 +73,9 @@ export default function Sidebar() {
                 `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all ${
                   collapsed ? 'justify-center' : ''
                 } ${
-                 isActive
-  ? 'bg-orange-500/80 text-white shadow-lg shadow-orange-900/50 backdrop-blur-sm'
-  : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                  isActive
+                    ? 'bg-orange-500/80 text-white shadow-lg shadow-orange-900/50 backdrop-blur-sm'
+                    : 'text-blue-100 hover:bg-white/10 hover:text-white'
                 }`
               }
             >
@@ -84,11 +86,11 @@ export default function Sidebar() {
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-indigo-700">
+        <div className="p-3 border-t border-white/10">
           <button
             onClick={handleLogout}
             title={collapsed ? 'Logout' : ''}
-            className={`w-full px-3 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}
+            className={`w-full px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}
           >
             <span className="text-xl">🚪</span>
             {!collapsed && <span>Logout</span>}
@@ -96,8 +98,9 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Main content margin adjusts automatically */}
       <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         main { margin-left: ${collapsed ? '80px' : '256px'}; transition: margin-left 0.3s; }
       `}</style>
     </>

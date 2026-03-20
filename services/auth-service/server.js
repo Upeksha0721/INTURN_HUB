@@ -13,6 +13,7 @@ app.use(express.json());
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
+app.use('/api/cv', require('./routes/cvRoutes'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Auth Service is running ✅' });
