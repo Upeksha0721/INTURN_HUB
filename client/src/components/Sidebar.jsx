@@ -23,7 +23,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Sidebar */}
-      <div className={`h-screen ${collapsed ? 'w-20' : 'w-64'} bg-indigo-900 text-white flex flex-col fixed left-0 top-0 transition-all duration-300 z-40`}>
+      <div className={`h-screen ${collapsed ? 'w-20' : 'w-64'} text-white flex flex-col fixed left-0 top-0 transition-all duration-300 z-40`} style={{background: 'linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)'}}>
 
         {/* Logo + Toggle */}
         <div className={`p-4 border-b border-indigo-700 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
@@ -71,9 +71,9 @@ export default function Sidebar() {
                 `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all ${
                   collapsed ? 'justify-center' : ''
                 } ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50'
-                    : 'text-indigo-200 hover:bg-indigo-700 hover:text-white'
+                 isActive
+  ? 'bg-orange-500/80 text-white shadow-lg shadow-orange-900/50 backdrop-blur-sm'
+  : 'text-blue-100 hover:bg-white/10 hover:text-white'
                 }`
               }
             >

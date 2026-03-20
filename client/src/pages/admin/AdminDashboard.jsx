@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/Spinner';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
+} from 'recharts';
 
 const AUTH_API = 'http://localhost:5001/api/auth';
 const STUDY_API = 'http://localhost:5003/api/study-materials';
@@ -10,70 +14,81 @@ const VACANCY_API = 'http://localhost:5002/api/vacancies';
 export default function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ students: 0, materials: 0, vacancies: 0 });
+  const [stats, setStats] = useState({ students: 0, materials: 0, vacancies: 0, messages: 0 });
   const [activities, setActivities] = useState([]);
+  const [chartData, setChartData] = useState({ pie: [], bar: [] });
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch users
-        const usersRes = await fetch(`${AUTH_API}/users`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const [usersRes, materialsRes, vacancyRes, messagesRes] = await Promise.all([
+          fetch(`${AUTH_API}/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(STUDY_API, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(VACANCY_API, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`http://localhost:5001/api/messages`, { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
         const users = await usersRes.json();
-        const students = users.filter(u => u.role === 'student');
-
-        // Fetch materials
-        const materialsRes = await fetch(STUDY_API, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
         const materials = await materialsRes.json();
-
-        // Fetch vacancies
-        const vacancyRes = await fetch(VACANCY_API, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
         const vacancies = await vacancyRes.json();
+        const messages = await messagesRes.json();
+        const students = users.filter(u => u.role === 'student');
 
         setStats({
           students: students.length,
           materials: materials.length,
-          vacancies: vacancies.length
+          vacancies: vacancies.length,
+          messages: messages.filter(m => !m.isRead).length
         });
 
-        // Build activity feed
+        // Pie chart data - system usage
+        setChartData({
+          pie: [
+            { name: 'Students', value: students.length, color: '#1d4ed8' },
+            { name: 'Vacancies', value: vacancies.length, color: '#ea580c' },
+            { name: 'Materials', value: materials.length, color: '#7c3aed' },
+            { name: 'Messages', value: messages.length, color: '#059669' },
+          ],
+          bar: [
+            { name: 'Students', count: students.length, fill: '#1d4ed8' },
+            { name: 'Vacancies', count: vacancies.length, fill: '#ea580c' },
+            { name: 'Materials', count: materials.length, fill: '#7c3aed' },
+            { name: 'Messages', count: messages.length, fill: '#059669' },
+          ]
+        });
+
+        // Build monthly registration data
+        const monthlyData = Array.from({ length: 6 }, (_, i) => {
+          const d = new Date();
+          d.setMonth(d.getMonth() - (5 - i));
+          const monthName = d.toLocaleString('default', { month: 'short' });
+          const count = students.filter(s => {
+            const created = new Date(s.createdAt);
+            return created.getMonth() === d.getMonth() && created.getFullYear() === d.getFullYear();
+          }).length;
+          return { month: monthName, students: count };
+        });
+
+        setChartData(prev => ({ ...prev, monthly: monthlyData }));
+
+        // Activities
         const userActivities = students.slice(0, 2).map(u => ({
-          id: u._id,
-          icon: '👤',
-          text: `${u.name} registered as student`,
-          time: new Date(u.createdAt),
-          color: 'bg-blue-100'
+          id: u._id, icon: '👤', text: `${u.name} registered as student`,
+          time: new Date(u.createdAt), color: 'bg-blue-100 text-blue-600'
         }));
-
         const materialActivities = materials.slice(0, 2).map(m => ({
-          id: m._id,
-          icon: '📚',
-          text: `Study material "${m.title}" uploaded`,
-          time: new Date(m.createdAt),
-          color: 'bg-purple-100'
+          id: m._id, icon: '📚', text: `Study material "${m.title}" uploaded`,
+          time: new Date(m.createdAt), color: 'bg-indigo-100 text-indigo-600'
         }));
-
         const vacancyActivities = vacancies.slice(0, 2).map(v => ({
-          id: v._id,
-          icon: '💼',
-          text: `Vacancy "${v.title}" posted at ${v.company}`,
-          time: new Date(v.createdAt),
-          color: 'bg-green-100'
+          id: v._id, icon: '💼', text: `Vacancy "${v.title}" posted at ${v.company}`,
+          time: new Date(v.createdAt), color: 'bg-orange-100 text-orange-600'
         }));
 
-        // Combine and sort by date newest first
         const allActivities = [...userActivities, ...materialActivities, ...vacancyActivities]
-          .sort((a, b) => b.time - a.time)
-          .slice(0, 6)
+          .sort((a, b) => b.time - a.time).slice(0, 5)
           .map(a => ({ ...a, time: a.time.toLocaleDateString() }));
-
         setActivities(allActivities);
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
@@ -81,96 +96,214 @@ export default function AdminDashboard() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  const quickActions = [
-    { label: 'Post New Vacancy', icon: '➕', color: 'bg-green-50 hover:bg-green-100 text-green-700', path: '/admin/post-vacancy' },
-    { label: 'View Applications', icon: '📋', color: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700', path: '/admin/applications' },
-    { label: 'Upload Material', icon: '📤', color: 'bg-purple-50 hover:bg-purple-100 text-purple-700', path: '/admin/upload-material' },
-    { label: 'Create Quiz', icon: '✏️', color: 'bg-pink-50 hover:bg-pink-100 text-pink-700', path: '/admin/create-quiz' },
-  ];
-
   if (loading) return <Spinner message="Loading dashboard..." />;
 
+  const statCards = [
+    { label: 'Total Students', value: stats.students, icon: '👥', color: 'from-blue-800 to-blue-600', light: 'bg-blue-50 text-blue-700', path: '/admin/users' },
+    { label: 'Active Vacancies', value: stats.vacancies, icon: '💼', color: 'from-orange-600 to-orange-400', light: 'bg-orange-50 text-orange-700', path: '/admin/vacancies' },
+    { label: 'Study Materials', value: stats.materials, icon: '📚', color: 'from-blue-700 to-indigo-500', light: 'bg-indigo-50 text-indigo-700', path: '/admin/upload-material' },
+    { label: 'Unread Messages', value: stats.messages, icon: '📬', color: 'from-orange-500 to-red-500', light: 'bg-red-50 text-red-700', path: '/admin/messages' },
+  ];
+
+  const quickActions = [
+    { label: 'Post Vacancy', icon: '➕', color: 'bg-blue-800 hover:bg-blue-900', path: '/admin/post-vacancy' },
+    { label: 'Manage Users', icon: '👥', color: 'bg-orange-500 hover:bg-orange-600', path: '/admin/users' },
+    { label: 'Upload Material', icon: '📤', color: 'bg-blue-600 hover:bg-blue-700', path: '/admin/upload-material' },
+    { label: 'View Messages', icon: '📬', color: 'bg-orange-600 hover:bg-orange-700', path: '/admin/messages' },
+  ];
+
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Welcome, {user?.name}! 👋</h1>
-        <p className="text-gray-500 mt-1">Here's your InternHub admin overview.</p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">👥</div>
+      {/* Top Banner */}
+      <div
+        className="relative px-8 py-8"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/92 via-blue-800/88 to-orange-600/82"></div>
+        <div className="relative z-10 max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <div className="text-2xl font-bold text-gray-800">{stats.students}</div>
-            <div className="text-gray-500 text-sm">Total Students</div>
+            <p className="text-orange-300 text-sm font-medium mb-1">⚙️ Admin Panel</p>
+            <h1 className="text-3xl font-bold text-white mb-1">Welcome, {user?.name}! 👋</h1>
+            <p className="text-blue-200">Here's your InternHub overview for today.</p>
           </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl">💼</div>
-          <div>
-            <div className="text-2xl font-bold text-gray-800">{stats.vacancies}</div>
-            <div className="text-gray-500 text-sm">Active Vacancies</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl">📋</div>
-          <div>
-            <div className="text-2xl font-bold text-gray-800">0</div>
-            <div className="text-gray-500 text-sm">Applications</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">📚</div>
-          <div>
-            <div className="text-2xl font-bold text-gray-800">{stats.materials}</div>
-            <div className="text-gray-500 text-sm">Study Materials</div>
+          <div className="hidden md:flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-white font-semibold">{user?.name}</p>
+              <p className="text-orange-200 text-sm">Administrator</p>
+            </div>
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center text-white text-2xl font-bold">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickActions.map(action => (
-            <button
-              key={action.label}
-              onClick={() => navigate(action.path)}
-              className={`${action.color} p-4 rounded-xl text-center transition-all`}
+      <div className="max-w-6xl mx-auto px-8 py-8">
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 -mt-6">
+          {statCards.map(card => (
+            <div
+              key={card.label}
+              onClick={() => navigate(card.path)}
+              className="bg-white rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100"
             >
-              <div className="text-3xl mb-2">{action.icon}</div>
-              <div className="text-sm font-medium">{action.label}</div>
-            </button>
+              <div className="flex items-center justify-between mb-3">
+                <div className={`w-10 h-10 ${card.light} rounded-xl flex items-center justify-center text-xl`}>
+                  {card.icon}
+                </div>
+                <span className={`text-xs font-medium ${card.light} px-2 py-1 rounded-full`}>View →</span>
+              </div>
+              <div className="text-2xl font-bold text-gray-800">{card.value}</div>
+              <div className="text-gray-500 text-sm mt-1">{card.label}</div>
+              <div className={`h-1 w-full bg-gradient-to-r ${card.color} rounded-full mt-3 opacity-40`}></div>
+            </div>
           ))}
         </div>
-      </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h2>
-        {activities.length === 0 ? (
-          <p className="text-gray-400 text-center py-8">No recent activity</p>
-        ) : (
-          <div className="space-y-4">
-            {activities.map((activity, index) => (
-              <div key={index} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50">
-                <div className={`w-10 h-10 ${activity.color} rounded-full flex items-center justify-center text-lg`}>
-                  {activity.icon}
-                </div>
-                <div className="flex-1">
-                  <p className="text-gray-700 text-sm font-medium">{activity.text}</p>
-                  <p className="text-gray-400 text-xs">{activity.time}</p>
-                </div>
-              </div>
-            ))}
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+          {/* Bar Chart - System Overview */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-1">System Overview</h2>
+            <p className="text-gray-400 text-sm mb-5">Total count per category</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={chartData.bar} barSize={40}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b7280' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                  {chartData.bar?.map((entry, index) => (
+                    <Cell key={index} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        )}
+
+          {/* Pie Chart - Distribution */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-1">System Distribution</h2>
+            <p className="text-gray-400 text-sm mb-5">Percentage breakdown</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={chartData.pie}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {chartData.pie?.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Monthly Student Registration Bar Chart */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Student Registrations</h2>
+          <p className="text-gray-400 text-sm mb-5">Monthly student sign-ups over last 6 months</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={chartData.monthly} barSize={35}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} />
+              <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+              />
+              <Bar dataKey="students" fill="#1d4ed8" radius={[6, 6, 0, 0]} name="Students" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Quick Actions + System Status */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-5">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {quickActions.map(action => (
+                <button
+                  key={action.label}
+                  onClick={() => navigate(action.path)}
+                  className={`${action.color} text-white p-4 rounded-xl text-center transition-all hover:shadow-lg hover:-translate-y-0.5`}
+                >
+                  <div className="text-2xl mb-1">{action.icon}</div>
+                  <div className="text-xs font-medium">{action.label}</div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-5 pt-5 border-t border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">🟢 System Status</h3>
+              <div className="space-y-2">
+                {[
+                  { label: 'Auth Service', port: '5001' },
+                  { label: 'Vacancy Service', port: '5002' },
+                  { label: 'Study Service', port: '5003' },
+                ].map(service => (
+                  <div key={service.label} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
+                    <span className="text-gray-600 font-medium">{service.label}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      <span className="text-green-600 text-xs font-medium">:{service.port}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
+              <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Latest updates</span>
+            </div>
+            {activities.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <div className="text-4xl mb-2">📋</div>
+                <p>No recent activity</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {activities.map((activity, index) => (
+                  <div key={index} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                    <div className={`w-10 h-10 ${activity.color} rounded-xl flex items-center justify-center text-lg shrink-0`}>
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-700 text-sm font-medium truncate">{activity.text}</p>
+                      <p className="text-gray-400 text-xs mt-0.5">{activity.time}</p>
+                    </div>
+                    <div className="w-2 h-2 bg-orange-400 rounded-full shrink-0"></div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
