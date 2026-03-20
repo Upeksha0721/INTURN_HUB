@@ -22,7 +22,7 @@ import Messages from './pages/admin/Messages';
 const StudentLayout = ({ children }) => (
   <div className="flex bg-gray-50 min-h-screen">
     <Sidebar />
-    <main className="ml-64 flex-1">{children}</main>
+    <main className="flex-1 transition-all duration-300">{children}</main>
   </div>
 );
 
