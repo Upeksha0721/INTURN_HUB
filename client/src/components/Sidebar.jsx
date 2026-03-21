@@ -9,6 +9,7 @@ const navItems = [
   { path: '/student/study-materials', label: 'Study Materials', icon: '📚' },
   { path: '/student/quizzes',         label: 'Quizzes',         icon: '🧠' },
   { path: '/student/cv-builder',      label: 'CV Builder',      icon: '📄' },
+  { path: '/student/settings', label: 'Settings', icon: '⚙️' },
 ];
 
 export default function Sidebar() {

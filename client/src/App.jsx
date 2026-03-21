@@ -19,6 +19,9 @@ import CreateQuiz from './pages/admin/CreateQuiz';
 import LandingPage from './pages/LandingPage';
 import Messages from './pages/admin/Messages';
 import CVBuilder from './pages/student/CVBuilder';
+import Settings from './pages/student/Settings';
+
+
 
 const StudentLayout = ({ children }) => (
   <div className="flex bg-gray-50 min-h-screen">
@@ -100,6 +103,9 @@ function AppRoutes() {
       } />
       <Route path="/student/cv-builder" element={
        <ProtectedRoute><StudentLayout><CVBuilder /></StudentLayout></ProtectedRoute>
+      } />
+      <Route path="/student/settings" element={
+        <ProtectedRoute><StudentLayout><Settings /></StudentLayout></ProtectedRoute>
       } />
     </Routes>
   );

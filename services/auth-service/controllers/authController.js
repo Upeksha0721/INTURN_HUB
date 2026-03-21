@@ -92,3 +92,35 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// @PUT /api/auth/profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone, password, photo } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (photo) user.photo = photo;
+    if (password) {
+      const bcrypt = require('bcryptjs');
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+    res.json({ message: 'Profile updated successfully', user: { id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone, photo: user.photo } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @DELETE /api/auth/account
+exports.deleteAccount = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.user.id);
+    res.json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

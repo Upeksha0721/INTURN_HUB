@@ -20,7 +20,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['student', 'admin'],
     default: 'student'
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  photo: {
+    type: String
   }
+  
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
