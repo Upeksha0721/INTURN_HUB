@@ -15,7 +15,6 @@ const emptyCV = {
   references: [{ name: '', designation: '', organization: '', contact: '' }],
 };
 
-// Reusable CV Document component — used for both preview and PDF capture
 function CVDocument({ cv, headerColor }) {
   const sectionHeading = {
     fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a',
@@ -32,7 +31,6 @@ function CVDocument({ cv, headerColor }) {
       minHeight: '297mm',
       boxSizing: 'border-box',
     }}>
-      {/* Header */}
       <div style={{ background: headerColor, padding: '32px 40px', boxSizing: 'border-box' }}>
         <h1 style={{ color: '#ffffff', fontSize: '18px', fontWeight: 'bold', margin: 0, letterSpacing: '0.5px' }}>
           {cv.name || 'Your Name'}
@@ -164,7 +162,6 @@ export default function CVBuilder() {
   const [loadingCV, setLoadingCV] = useState(true);
   const [headerColor, setHeaderColor] = useState('#1e3a8a');
   const [versions, setVersions] = useState([]);
-  // Separate ref for the hidden full-size PDF capture element
   const pdfRef = useRef();
   const token = localStorage.getItem('token');
   const [cv, setCv] = useState(emptyCV);
@@ -239,12 +236,9 @@ export default function CVBuilder() {
   const downloadPDF = async () => {
     setDownloading(true);
     try {
-      // Temporarily make the hidden element visible for capture
       const element = pdfRef.current;
       element.style.display = 'block';
-
-      // Wait a tick for the browser to render it
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const canvas = await html2canvas(element, {
         scale: 2,
@@ -252,10 +246,9 @@ export default function CVBuilder() {
         allowTaint: false,
         backgroundColor: '#ffffff',
         logging: false,
-        // Do NOT pass width/height — let it use the element's natural size
+        foreignObjectRendering: false,
       });
 
-      // Hide again
       element.style.display = 'none';
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -265,8 +258,7 @@ export default function CVBuilder() {
       const pageHeight = pdf.internal.pageSize.getHeight();
 
       if (pdfHeight > pageHeight) {
-        let yOffset = 0;
-        let remaining = pdfHeight;
+        let yOffset = 0, remaining = pdfHeight;
         while (remaining > 0) {
           pdf.addImage(imgData, 'JPEG', 0, -yOffset, pdfWidth, pdfHeight);
           remaining -= pageHeight;
@@ -278,8 +270,18 @@ export default function CVBuilder() {
       }
 
       pdf.save(`${cv.name.replace(/\s+/g, '_') || 'My'}_CV.pdf`);
+
+      // Track download
+      try {
+        await fetch('http://localhost:5001/api/cv/track-download', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (e) { console.error('Track download failed'); }
+
       setCv(emptyCV);
     } catch (err) {
+      if (pdfRef.current) pdfRef.current.style.display = 'none';
       alert('PDF failed: ' + err.message);
     } finally {
       setDownloading(false);
@@ -311,20 +313,12 @@ export default function CVBuilder() {
 
   return (
     <div className="p-8">
-      {/* 
-        HIDDEN PDF CAPTURE ELEMENT — rendered at real A4 size, off-screen.
-        html2canvas reads this; no CSS transforms applied.
-      */}
-      <div
-        ref={pdfRef}
-        style={{
-          display: 'none',
-          position: 'fixed',
-          top: 0,
-          left: '-9999px',
-          zIndex: -1,
-        }}
-      >
+
+      {/* Hidden PDF capture element */}
+      <div ref={pdfRef} style={{
+        display: 'none', position: 'fixed',
+        top: 0, left: '-9999px', zIndex: -1,
+      }}>
         <CVDocument cv={cv} headerColor={headerColor} />
       </div>
 
@@ -353,6 +347,7 @@ export default function CVBuilder() {
 
           {/* FORM */}
           <div className="lg:col-span-2 space-y-5">
+
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-800 mb-4">👤 Personal Information</h2>
               <div className="space-y-3">
@@ -478,14 +473,19 @@ export default function CVBuilder() {
             </button>
             <button onClick={downloadPDF} disabled={downloading || !cv.name}
               className="w-full py-4 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-2xl transition-all shadow-lg disabled:opacity-50 text-lg">
-              {downloading ? '⏳ Generating PDF...' : '⬇️ Download & Clear CV'}
+              {downloading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Generating PDF...
+                </span>
+              ) : '⬇️ Download & Clear CV'}
             </button>
           </div>
 
           {/* RIGHT COLUMN */}
           <div className="space-y-4">
 
-            {/* A4 CV Preview — uses CSS scale for display only, NOT for PDF */}
+            {/* A4 Preview */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
               <p className="text-xs text-gray-500 text-center mb-2">👁️ Live Preview (A4)</p>
               <div style={{ overflow: 'hidden', height: '380px', position: 'relative' }}>

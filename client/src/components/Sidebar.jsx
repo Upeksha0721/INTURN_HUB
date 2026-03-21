@@ -23,8 +23,8 @@ export default function Sidebar() {
   };
 
   const handleEditProfile = () => {
-    navigate('/student/profile/edit');
-  };
+  navigate('/student/settings');
+   };
 
   return (
     <>

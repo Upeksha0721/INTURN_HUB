@@ -16,6 +16,8 @@ const cvSchema = new mongoose.Schema({
   certifications: { type: Array, default: [] },
   references: { type: Array, default: [] },
   versions: { type: Array, default: [] },
+  downloadCount: { type: Number, default: 0 },
+  lastDownloaded: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('CV', cvSchema);
