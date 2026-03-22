@@ -70,7 +70,8 @@ export default function ManageVacancies() {
             setEditingVacancy(null);
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
-            setError('Failed to update vacancy');
+            const message = err?.response?.data?.message || 'Failed to update vacancy';
+            setError(message);
         } finally {
             setEditLoading(false);
         }
