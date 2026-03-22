@@ -20,7 +20,7 @@ import LandingPage from './pages/LandingPage';
 import Messages from './pages/admin/Messages';
 import CVBuilder from './pages/student/CVBuilder';
 import Settings from './pages/student/Settings';
-
+import ManageQuizzes from './pages/admin/ManageQuizzes';
 
 
 const StudentLayout = ({ children }) => (
@@ -106,6 +106,13 @@ function AppRoutes() {
       } />
       <Route path="/student/settings" element={
         <ProtectedRoute><StudentLayout><Settings /></StudentLayout></ProtectedRoute>
+      } />
+      <Route path="/student/quizzes" element={
+       <ProtectedRoute><StudentLayout><Quizzes /></StudentLayout></ProtectedRoute>
+      } />
+
+      <Route path="/admin/quizzes" element={
+       <ProtectedRoute><AdminLayout><ManageQuizzes /></AdminLayout></ProtectedRoute>
       } />
     </Routes>
   );
