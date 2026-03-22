@@ -1,10 +1,8 @@
 const Vacancy = require('../models/vacancy');
 const Application = require('../models/Application');
 
-
 // Create a new vacancy
 const createVacancy = async (req, res) => {
-<<<<<<< Updated upstream
     try {
        const { title, company, description, location, deadline, imageUrl, salary, jobType, skills } = req.body;
      const postedBy = req.user.id;
@@ -17,7 +15,6 @@ const createVacancy = async (req, res) => {
     return res.status(400).json({ message: "Deadline cannot be in the past." });
     }
 
-<<<<<<< Updated upstream
     const newVacancy = new Vacancy({
       title,
       company,
@@ -30,64 +27,22 @@ const createVacancy = async (req, res) => {
       jobType: jobType || 'Internship',
       skills: skills || []
     });
-=======
-        const newVacancy = new Vacancy({
-            title,
-            company,
-            description,
-            location,
-            deadline,
-            postedBy
-        });
-=======
-  try {
-    const { title, company, description, location, deadline, imageUrl, salary, jobType, skills } = req.body;
-    const postedBy = req.user.id;
->>>>>>> Stashed changes
 
-    const validationError = validateVacancyInput({ title, company, location, deadline, salary });
-    if (validationError) {
-      return res.status(400).json({ message: validationError });
+        const savedVacancy = await newVacancy.save();
+        res.status(201).json(savedVacancy);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to create vacancy", error: error.message });
     }
-
-    const newVacancy = new Vacancy({
-      title,
-      company,
-      description,
-      location,
-      deadline,
-      postedBy,
-      imageUrl: imageUrl || '',
-      salary,
-      jobType: jobType || 'Internship',
-      skills: skills || []
-    });
->>>>>>> Stashed changes
-
-    const savedVacancy = await newVacancy.save();
-    res.status(201).json(savedVacancy);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create vacancy', error: error.message });
-  }
 };
 
 // Get all vacancies
 const getAllVacancies = async (req, res) => {
-  try {
-    const now = new Date();
-    await Vacancy.deleteMany({ deadline: { $lt: now } });
-
-    const vacancies = await Vacancy.find({
-      $or: [
-        { deadline: { $gte: now } },
-        { deadline: null },
-        { deadline: { $exists: false } }
-      ]
-    }).sort({ createdAt: -1 });
-    res.status(200).json(vacancies);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch vacancies', error: error.message });
-  }
+    try {
+        const vacancies = await Vacancy.find().sort({ createdAt: -1 });
+        res.status(200).json(vacancies);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch vacancies", error: error.message });
+    }
 };
 
 // Get a single vacancy by ID
@@ -105,25 +60,20 @@ const getVacancyById = async (req, res) => {
 
 // Update a vacancy
 const updateVacancy = async (req, res) => {
-  try {
-    const validationError = validateVacancyInput(req.body);
-    if (validationError) {
-      return res.status(400).json({ message: validationError });
-    }
+    try {
+        const updatedVacancy = await Vacancy.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
 
-    const updatedVacancy = await Vacancy.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedVacancy) {
-      return res.status(404).json({ message: 'Vacancy not found' });
+        if (!updatedVacancy) {
+            return res.status(404).json({ message: "Vacancy not found" });
+        }
+        res.status(200).json(updatedVacancy);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to update vacancy", error: error.message });
     }
-    res.status(200).json(updatedVacancy);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update vacancy', error: error.message });
-  }
 };
 
 // Delete a vacancy
