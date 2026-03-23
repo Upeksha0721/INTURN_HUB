@@ -114,13 +114,14 @@ export default function ManageVacancies() {
                             <th className="px-6 py-4">Vacancy Details</th>
                             <th className="px-6 py-4">Location</th>
                             <th className="px-6 py-4">Deadline</th>
+                            <th className="px-6 py-4">Uploaded Date</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {vacancies.length === 0 ? (
                             <tr>
-                                <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
+                                <td colSpan="5" className="px-6 py-12 text-center text-gray-400">
                                     No vacancies found.
                                 </td>
                             </tr>
@@ -139,6 +140,11 @@ export default function ManageVacancies() {
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         <span className="flex items-center gap-1.5">
                                             <span className="text-gray-400">⏳</span> {v.deadline ? new Date(v.deadline).toLocaleDateString() : 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="text-gray-400">📅</span> {v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'N/A'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
