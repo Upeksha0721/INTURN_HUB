@@ -23,6 +23,8 @@ export default function ManageVacancies() {
 
     // Delete State
     const [deletingId, setDeletingId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedVacancyId, setSelectedVacancyId] = useState(null);
 
     useEffect(() => {
         fetchVacancies();
@@ -31,29 +33,49 @@ export default function ManageVacancies() {
     const fetchVacancies = async () => {
         try {
             setLoading(true);
+            setError('');
             const res = await getVacancies();
             setVacancies(res.data);
         } catch (err) {
+            console.error('Fetch vacancies error:', err);
             setError('Failed to fetch vacancies');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this vacancy?')) return;
+    const handleDeleteClick = (id) => {
+        setSelectedVacancyId(id);
+        setShowDeleteModal(true);
+    };
 
+    const confirmDelete = async () => {
         try {
-            setDeletingId(id);
-            await deleteVacancy(id);
+            setDeletingId(selectedVacancyId);
+            setError('');
+            setSuccess('');
+
+            await deleteVacancy(selectedVacancyId);
+
             setSuccess('Vacancy deleted successfully');
-            setVacancies(vacancies.filter((v) => v._id !== id));
+            setVacancies(vacancies.filter((v) => v._id !== selectedVacancyId));
+
+            setShowDeleteModal(false);
+            setSelectedVacancyId(null);
+
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
-            setError('Failed to delete vacancy');
+            console.error('Delete vacancy error:', err);
+            setError('Unable to delete the vacancy right now. Please try again.');
+            setTimeout(() => setError(''), 3000);
         } finally {
             setDeletingId(null);
         }
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteModal(false);
+        setSelectedVacancyId(null);
     };
 
     const openEditModal = (vacancy) => {
@@ -76,6 +98,9 @@ export default function ManageVacancies() {
         e.preventDefault();
         try {
             setEditLoading(true);
+            setError('');
+            setSuccess('');
+
             const res = await updateVacancy(editingVacancy._id, editForm);
             setSuccess('Vacancy updated successfully');
             setVacancies(
@@ -86,7 +111,9 @@ export default function ManageVacancies() {
             setEditingVacancy(null);
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
+            console.error('Update vacancy error:', err);
             setError('Failed to update vacancy');
+            setTimeout(() => setError(''), 3000);
         } finally {
             setEditLoading(false);
         }
@@ -114,14 +141,14 @@ export default function ManageVacancies() {
             </div>
 
             {success && (
-                <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-sm flex items-center gap-3 animate-fade-in">
+                <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-sm flex items-center gap-3">
                     <span className="text-green-500 text-xl">✅</span>
                     <p className="text-green-700 font-medium">{success}</p>
                 </div>
             )}
 
             {error && (
-                <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm flex items-center gap-3 animate-fade-in">
+                <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm flex items-center gap-3">
                     <span className="text-red-500 text-xl">⚠️</span>
                     <p className="text-red-700 font-medium">{error}</p>
                 </div>
@@ -200,7 +227,7 @@ export default function ManageVacancies() {
                                             </button>
 
                                             <button
-                                                onClick={() => handleDelete(v._id)}
+                                                onClick={() => handleDeleteClick(v._id)}
                                                 disabled={deletingId === v._id}
                                                 className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-300 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-all ${
                                                     deletingId === v._id
@@ -227,7 +254,7 @@ export default function ManageVacancies() {
 
             {editingVacancy && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-zoom-in">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                             <h2 className="text-xl font-bold text-gray-800">
                                 Edit Vacancy
@@ -411,6 +438,38 @@ export default function ManageVacancies() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="p-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-2">
+                                Confirm Delete
+                            </h2>
+                            <p className="text-gray-600">
+                                Are you sure you want to delete this vacancy?
+                            </p>
+                        </div>
+
+                        <div className="px-6 pb-6 flex justify-end gap-3">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={confirmDelete}
+                                disabled={deletingId === selectedVacancyId}
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50"
+                            >
+                                {deletingId === selectedVacancyId ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
