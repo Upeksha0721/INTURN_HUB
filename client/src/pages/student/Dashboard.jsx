@@ -53,9 +53,9 @@ export default function Dashboard() {
 
   const quickActions = [
     { label: 'Browse Vacancies', icon: '🔍', color: 'bg-blue-800 hover:bg-blue-900', path: '/student/vacancies' },
-    { label: 'My Applications', icon: '📋', color: 'bg-orange-500 hover:bg-orange-600', path: '/student/applications' },
+    { label: 'My Applications', icon: '📋', color: 'bg-orange-400 hover:bg-orange-200', path: '/student/applications' },
     { label: 'Study Materials', icon: '📖', color: 'bg-blue-600 hover:bg-blue-700', path: '/student/study-materials' },
-    { label: 'Take a Quiz', icon: '✏️', color: 'bg-orange-600 hover:bg-orange-700', path: '/student/quizzes' },
+    { label: 'Take a Quiz', icon: '✏️', color: 'bg-orange-400 hover:bg-orange-200', path: '/student/quizzes' },
   ];
 
   return (
@@ -168,7 +168,7 @@ export default function Dashboard() {
 
         {/* Bottom Stats Bar */}
         <div className="rounded-2xl p-6 text-white"
-          style={{background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #ea580c 100%)'}}>
+          style={{background: 'linear-gradient(135deg, #1e3a8a 0%, #2d3f71 60%, #91692d 100%)'}}>
           <div className="grid grid-cols-3 gap-6 text-center">
             <div>
               <div className="text-3xl font-bold">{stats.vacancies}</div>

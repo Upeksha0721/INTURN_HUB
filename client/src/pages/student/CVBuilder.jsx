@@ -6,7 +6,7 @@ const CV_API = 'http://localhost:5001/api/cv';
 
 const emptyCV = {
   name: '', email: '', phone: '', address: '', linkedin: '',
-  objective: '',
+  objective: '', photo: '',
   education: [{ degree: '', institution: '', year: '', gpa: '' }],
   experience: [{ title: '', company: '', duration: '', description: '' }],
   skills: '', softSkills: '',
@@ -15,145 +15,173 @@ const emptyCV = {
   references: [{ name: '', designation: '', organization: '', contact: '' }],
 };
 
-function CVDocument({ cv, headerColor }) {
-  const sectionHeading = {
+// ─── TEMPLATE 1: Classic Blue ───────────────────────────────────────────────
+function ClassicTemplate({ cv, headerColor }) {
+  const sh = {
     fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a',
     textTransform: 'uppercase', letterSpacing: '1px',
     borderBottom: '2px solid #ea580c', paddingBottom: '4px',
     marginBottom: '8px', display: 'block', width: '100%'
   };
-
   return (
-    <div style={{
-      fontFamily: 'Arial, sans-serif',
-      background: '#ffffff',
-      width: '210mm',
-      minHeight: '297mm',
-      boxSizing: 'border-box',
-    }}>
-      <div style={{ background: headerColor, padding: '32px 40px', boxSizing: 'border-box' }}>
-        <h1 style={{ color: '#ffffff', fontSize: '18px', fontWeight: 'bold', margin: 0, letterSpacing: '0.5px' }}>
-          {cv.name || 'Your Name'}
-        </h1>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '10px' }}>
-          {cv.email    && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>✉ {cv.email}</span>}
-          {cv.phone    && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>☎ {cv.phone}</span>}
-          {cv.address  && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>⌂ {cv.address}</span>}
-          {cv.linkedin && <span style={{ color: '#bfdbfe', fontSize: '12px' }}>in {cv.linkedin}</span>}
+    <div style={{ fontFamily: 'Arial, sans-serif', background: '#ffffff', width: '210mm', minHeight: '297mm', boxSizing: 'border-box' }}>
+      <div style={{ background: headerColor, padding: '28px 40px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        {cv.photo && <img src={cv.photo} alt="profile" style={{ width: '80px', height: '80px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.5)', objectFit: 'cover', flexShrink: 0 }} />}
+        <div>
+          <h1 style={{ color: '#ffffff', fontSize: '22px', fontWeight: 'bold', margin: 0 }}>{cv.name || 'Your Name'}</h1>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginTop: '8px' }}>
+            {cv.email    && <span style={{ color: '#bfdbfe', fontSize: '11px' }}>✉ {cv.email}</span>}
+            {cv.phone    && <span style={{ color: '#bfdbfe', fontSize: '11px' }}>☎ {cv.phone}</span>}
+            {cv.address  && <span style={{ color: '#bfdbfe', fontSize: '11px' }}>⌂ {cv.address}</span>}
+            {cv.linkedin && <span style={{ color: '#bfdbfe', fontSize: '11px' }}>in {cv.linkedin}</span>}
+          </div>
         </div>
       </div>
-
-      <div style={{ padding: '24px 40px', boxSizing: 'border-box', width: '100%' }}>
-
-        {cv.objective && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>Career Objective</h2>
-            <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.7', margin: 0, textAlign: 'justify' }}>{cv.objective}</p>
-          </div>
-        )}
-
-        {cv.education.some(e => e.degree) && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>Education</h2>
-            {cv.education.filter(e => e.degree).map((edu, i) => (
-              <div key={i} style={{ marginBottom: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{edu.degree}</p>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>{edu.year}</p>
-                </div>
-                <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>{edu.institution}</p>
-                {edu.gpa && <p style={{ fontSize: '12px', color: '#ea580c', margin: 0 }}>GPA: {edu.gpa}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {cv.experience.some(e => e.title) && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>Experience</h2>
-            {cv.experience.filter(e => e.title).map((exp, i) => (
-              <div key={i} style={{ marginBottom: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{exp.title}</p>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>{exp.duration}</p>
-                </div>
-                <p style={{ fontSize: '12px', color: '#ea580c', fontWeight: '600', margin: '3px 0' }}>{exp.company}</p>
-                {exp.description && <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0', lineHeight: '1.6', textAlign: 'justify' }}>{exp.description}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {cv.skills && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>Technical Skills</h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {cv.skills.split(',').map((skill, i) => (
-                <span key={i} style={{ padding: '3px 10px', background: '#dbeafe', color: '#1e40af', borderRadius: '4px', fontSize: '12px' }}>{skill.trim()}</span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {cv.softSkills && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>Soft Skills</h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {cv.softSkills.split(',').map((skill, i) => (
-                <span key={i} style={{ padding: '3px 10px', background: '#ffedd5', color: '#9a3412', borderRadius: '4px', fontSize: '12px' }}>{skill.trim()}</span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {cv.projects.some(p => p.name) && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>Projects</h2>
-            {cv.projects.filter(p => p.name).map((proj, i) => (
-              <div key={i} style={{ marginBottom: '10px' }}>
-                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{proj.name}</p>
-                {proj.tech && <p style={{ fontSize: '12px', color: '#ea580c', margin: '3px 0' }}>Tech: {proj.tech}</p>}
-                {proj.description && <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0', lineHeight: '1.6', textAlign: 'justify' }}>{proj.description}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {cv.certifications?.some(c => c.name) && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>Courses & Certifications</h2>
-            {cv.certifications.filter(c => c.name).map((cert, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{cert.name}</p>
-                  <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>{cert.institution}</p>
-                </div>
-                <p style={{ fontSize: '12px', color: '#ea580c', margin: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>{cert.year}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {cv.references?.some(r => r.name) && (
-          <div style={{ marginBottom: '18px' }}>
-            <h2 style={sectionHeading}>References</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              {cv.references.filter(r => r.name).map((ref, i) => (
-                <div key={i} style={{ background: '#f9fafb', borderRadius: '8px', padding: '12px' }}>
-                  <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{ref.name}</p>
-                  <p style={{ fontSize: '12px', color: '#ea580c', margin: '3px 0' }}>{ref.designation}</p>
-                  <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>{ref.organization}</p>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{ref.contact}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      <div style={{ padding: '24px 40px', boxSizing: 'border-box' }}>
+        {cv.objective && <div style={{ marginBottom: '16px' }}><h2 style={sh}>Career Objective</h2><p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.7', margin: 0, textAlign: 'justify' }}>{cv.objective}</p></div>}
+        {cv.education.some(e => e.degree) && <div style={{ marginBottom: '16px' }}><h2 style={sh}>Education</h2>{cv.education.filter(e => e.degree).map((edu, i) => (<div key={i} style={{ marginBottom: '8px' }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{edu.degree}</p><p style={{ fontSize: '12px', color: '#6b7280', margin: 0, marginLeft: '12px' }}>{edu.year}</p></div><p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>{edu.institution}</p>{edu.gpa && <p style={{ fontSize: '12px', color: '#ea580c', margin: 0 }}>GPA: {edu.gpa}</p>}</div>))}</div>}
+        {cv.experience.some(e => e.title) && <div style={{ marginBottom: '16px' }}><h2 style={sh}>Experience</h2>{cv.experience.filter(e => e.title).map((exp, i) => (<div key={i} style={{ marginBottom: '8px' }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{exp.title}</p><p style={{ fontSize: '12px', color: '#6b7280', margin: 0, marginLeft: '12px' }}>{exp.duration}</p></div><p style={{ fontSize: '12px', color: '#ea580c', fontWeight: '600', margin: '2px 0' }}>{exp.company}</p>{exp.description && <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0', lineHeight: '1.6', textAlign: 'justify' }}>{exp.description}</p>}</div>))}</div>}
+        {cv.skills && <div style={{ marginBottom: '16px' }}><h2 style={sh}>Technical Skills</h2><div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>{cv.skills.split(',').map((s, i) => (<span key={i} style={{ padding: '3px 10px', background: '#dbeafe', color: '#1e40af', borderRadius: '4px', fontSize: '11px' }}>{s.trim()}</span>))}</div></div>}
+        {cv.softSkills && <div style={{ marginBottom: '16px' }}><h2 style={sh}>Soft Skills</h2><div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>{cv.softSkills.split(',').map((s, i) => (<span key={i} style={{ padding: '3px 10px', background: '#ffedd5', color: '#9a3412', borderRadius: '4px', fontSize: '11px' }}>{s.trim()}</span>))}</div></div>}
+        {cv.projects.some(p => p.name) && <div style={{ marginBottom: '16px' }}><h2 style={sh}>Projects</h2>{cv.projects.filter(p => p.name).map((proj, i) => (<div key={i} style={{ marginBottom: '8px' }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{proj.name}</p>{proj.tech && <p style={{ fontSize: '12px', color: '#ea580c', margin: '2px 0' }}>Tech: {proj.tech}</p>}{proj.description && <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0', textAlign: 'justify' }}>{proj.description}</p>}</div>))}</div>}
+        {cv.certifications?.some(c => c.name) && <div style={{ marginBottom: '16px' }}><h2 style={sh}>Courses & Certifications</h2>{cv.certifications.filter(c => c.name).map((cert, i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><div style={{ flex: 1 }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{cert.name}</p><p style={{ fontSize: '12px', color: '#4b5563', margin: '1px 0' }}>{cert.institution}</p></div><p style={{ fontSize: '12px', color: '#ea580c', margin: 0, marginLeft: '12px' }}>{cert.year}</p></div>))}</div>}
+        {cv.references?.some(r => r.name) && <div style={{ marginBottom: '16px' }}><h2 style={sh}>References</h2><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>{cv.references.filter(r => r.name).map((ref, i) => (<div key={i} style={{ background: '#f9fafb', borderRadius: '8px', padding: '10px' }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{ref.name}</p><p style={{ fontSize: '12px', color: '#ea580c', margin: '2px 0' }}>{ref.designation}</p><p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>{ref.organization}</p><p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{ref.contact}</p></div>))}</div></div>}
       </div>
     </div>
   );
 }
 
+// ─── TEMPLATE 2: Modern Sidebar ────────────────────────────────────────────
+function ModernTemplate({ cv, headerColor }) {
+  return (
+    <div style={{ fontFamily: 'Arial, sans-serif', background: '#ffffff', width: '210mm', minHeight: '297mm', boxSizing: 'border-box', display: 'flex' }}>
+      <div style={{ width: '35%', background: headerColor, padding: '30px 20px', boxSizing: 'border-box', flexShrink: 0 }}>
+        {cv.photo && <div style={{ textAlign: 'center', marginBottom: '16px' }}><img src={cv.photo} alt="profile" style={{ width: '90px', height: '90px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.5)', objectFit: 'cover' }} /></div>}
+        <h1 style={{ color: '#ffffff', fontSize: '16px', fontWeight: 'bold', margin: '0 0 4px 0', textAlign: 'center' }}>{cv.name || 'Your Name'}</h1>
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', margin: '12px 0' }}></div>
+        <div style={{ marginBottom: '16px' }}>
+          <h3 style={{ color: 'rgba(255,255,255,0.7)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 8px 0' }}>Contact</h3>
+          {cv.email && <p style={{ color: '#bfdbfe', fontSize: '10px', margin: '4px 0' }}>✉ {cv.email}</p>}
+          {cv.phone && <p style={{ color: '#bfdbfe', fontSize: '10px', margin: '4px 0' }}>☎ {cv.phone}</p>}
+          {cv.address && <p style={{ color: '#bfdbfe', fontSize: '10px', margin: '4px 0' }}>⌂ {cv.address}</p>}
+          {cv.linkedin && <p style={{ color: '#bfdbfe', fontSize: '10px', margin: '4px 0' }}>in {cv.linkedin}</p>}
+        </div>
+        {cv.skills && <div style={{ marginBottom: '16px' }}>
+          <h3 style={{ color: 'rgba(255,255,255,0.7)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 8px 0' }}>Technical Skills</h3>
+          {cv.skills.split(',').map((s, i) => (<div key={i} style={{ marginBottom: '4px' }}><p style={{ color: '#ffffff', fontSize: '10px', margin: '0 0 2px 0' }}>{s.trim()}</p><div style={{ height: '3px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px' }}><div style={{ height: '3px', background: '#ffffff', borderRadius: '2px', width: '75%' }}></div></div></div>))}
+        </div>}
+        {cv.softSkills && <div style={{ marginBottom: '16px' }}>
+          <h3 style={{ color: 'rgba(255,255,255,0.7)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 8px 0' }}>Soft Skills</h3>
+          {cv.softSkills.split(',').map((s, i) => (<p key={i} style={{ color: '#bfdbfe', fontSize: '10px', margin: '3px 0' }}>• {s.trim()}</p>))}
+        </div>}
+      </div>
+      <div style={{ flex: 1, padding: '30px 24px', boxSizing: 'border-box' }}>
+        {cv.objective && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '12px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: `2px solid ${headerColor}`, paddingBottom: '3px', marginBottom: '6px' }}>Career Objective</h2><p style={{ fontSize: '11px', color: '#4b5563', lineHeight: '1.6', margin: 0, textAlign: 'justify' }}>{cv.objective}</p></div>}
+        {cv.education.some(e => e.degree) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '12px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: `2px solid ${headerColor}`, paddingBottom: '3px', marginBottom: '6px' }}>Education</h2>{cv.education.filter(e => e.degree).map((edu, i) => (<div key={i} style={{ marginBottom: '8px' }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{edu.degree}</p><p style={{ fontSize: '11px', color: '#6b7280', margin: 0, marginLeft: '8px' }}>{edu.year}</p></div><p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>{edu.institution}</p>{edu.gpa && <p style={{ fontSize: '11px', color: headerColor, margin: 0 }}>GPA: {edu.gpa}</p>}</div>))}</div>}
+        {cv.experience.some(e => e.title) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '12px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: `2px solid ${headerColor}`, paddingBottom: '3px', marginBottom: '6px' }}>Experience</h2>{cv.experience.filter(e => e.title).map((exp, i) => (<div key={i} style={{ marginBottom: '8px' }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1f2937', margin: 0, flex: 1 }}>{exp.title}</p><p style={{ fontSize: '11px', color: '#6b7280', margin: 0, marginLeft: '8px' }}>{exp.duration}</p></div><p style={{ fontSize: '11px', color: headerColor, fontWeight: '600', margin: '2px 0' }}>{exp.company}</p>{exp.description && <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0', lineHeight: '1.5', textAlign: 'justify' }}>{exp.description}</p>}</div>))}</div>}
+        {cv.projects.some(p => p.name) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '12px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: `2px solid ${headerColor}`, paddingBottom: '3px', marginBottom: '6px' }}>Projects</h2>{cv.projects.filter(p => p.name).map((proj, i) => (<div key={i} style={{ marginBottom: '8px' }}><p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{proj.name}</p>{proj.tech && <p style={{ fontSize: '11px', color: headerColor, margin: '2px 0' }}>Tech: {proj.tech}</p>}{proj.description && <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0', textAlign: 'justify' }}>{proj.description}</p>}</div>))}</div>}
+        {cv.certifications?.some(c => c.name) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '12px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: `2px solid ${headerColor}`, paddingBottom: '3px', marginBottom: '6px' }}>Certifications</h2>{cv.certifications.filter(c => c.name).map((cert, i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><div style={{ flex: 1 }}><p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{cert.name}</p><p style={{ fontSize: '11px', color: '#4b5563', margin: '1px 0' }}>{cert.institution}</p></div><p style={{ fontSize: '11px', color: headerColor, margin: 0, marginLeft: '8px' }}>{cert.year}</p></div>))}</div>}
+        {cv.references?.some(r => r.name) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '12px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: `2px solid ${headerColor}`, paddingBottom: '3px', marginBottom: '6px' }}>References</h2><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>{cv.references.filter(r => r.name).map((ref, i) => (<div key={i} style={{ background: '#f9fafb', borderRadius: '6px', padding: '8px' }}><p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{ref.name}</p><p style={{ fontSize: '11px', color: headerColor, margin: '2px 0' }}>{ref.designation}</p><p style={{ fontSize: '11px', color: '#4b5563', margin: '1px 0' }}>{ref.organization}</p><p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{ref.contact}</p></div>))}</div></div>}
+      </div>
+    </div>
+  );
+}
+
+// ─── TEMPLATE 3: Minimal Clean ─────────────────────────────────────────────
+function MinimalTemplate({ cv, headerColor }) {
+  return (
+    <div style={{ fontFamily: 'Georgia, serif', background: '#ffffff', width: '210mm', minHeight: '297mm', boxSizing: 'border-box', padding: '40px' }}>
+      <div style={{ borderBottom: `3px solid ${headerColor}`, paddingBottom: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        {cv.photo && <img src={cv.photo} alt="profile" style={{ width: '75px', height: '75px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: `2px solid ${headerColor}` }} />}
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 6px 0', letterSpacing: '1px' }}>{cv.name || 'Your Name'}</h1>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+            {cv.email    && <span style={{ fontSize: '11px', color: '#6b7280' }}>✉ {cv.email}</span>}
+            {cv.phone    && <span style={{ fontSize: '11px', color: '#6b7280' }}>☎ {cv.phone}</span>}
+            {cv.address  && <span style={{ fontSize: '11px', color: '#6b7280' }}>⌂ {cv.address}</span>}
+            {cv.linkedin && <span style={{ fontSize: '11px', color: '#6b7280' }}>in {cv.linkedin}</span>}
+          </div>
+        </div>
+      </div>
+      {cv.objective && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>Profile</h2><p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.7', margin: 0, textAlign: 'justify' }}>{cv.objective}</p></div>}
+      {cv.education.some(e => e.degree) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>Education</h2>{cv.education.filter(e => e.degree).map((edu, i) => (<div key={i} style={{ marginBottom: '8px', paddingLeft: '12px', borderLeft: `2px solid ${headerColor}` }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{edu.degree}</p><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>{edu.year}</p></div><p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0', fontStyle: 'italic' }}>{edu.institution}</p>{edu.gpa && <p style={{ fontSize: '11px', color: headerColor, margin: 0 }}>GPA: {edu.gpa}</p>}</div>))}</div>}
+      {cv.experience.some(e => e.title) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>Experience</h2>{cv.experience.filter(e => e.title).map((exp, i) => (<div key={i} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${headerColor}` }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{exp.title}</p><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>{exp.duration}</p></div><p style={{ fontSize: '11px', color: headerColor, fontStyle: 'italic', margin: '2px 0' }}>{exp.company}</p>{exp.description && <p style={{ fontSize: '11px', color: '#4b5563', margin: '3px 0', lineHeight: '1.5', textAlign: 'justify' }}>{exp.description}</p>}</div>))}</div>}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+        {cv.skills && <div><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>Technical Skills</h2>{cv.skills.split(',').map((s, i) => (<p key={i} style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>▸ {s.trim()}</p>))}</div>}
+        {cv.softSkills && <div><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>Soft Skills</h2>{cv.softSkills.split(',').map((s, i) => (<p key={i} style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>▸ {s.trim()}</p>))}</div>}
+      </div>
+      {cv.projects.some(p => p.name) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>Projects</h2>{cv.projects.filter(p => p.name).map((proj, i) => (<div key={i} style={{ marginBottom: '8px', paddingLeft: '12px', borderLeft: `2px solid ${headerColor}` }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{proj.name}</p>{proj.tech && <p style={{ fontSize: '11px', color: headerColor, margin: '2px 0', fontStyle: 'italic' }}>{proj.tech}</p>}{proj.description && <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0', textAlign: 'justify' }}>{proj.description}</p>}</div>))}</div>}
+      {cv.certifications?.some(c => c.name) && <div style={{ marginBottom: '16px' }}><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>Certifications</h2>{cv.certifications.filter(c => c.name).map((cert, i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><div><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{cert.name}</p><p style={{ fontSize: '11px', color: '#6b7280', fontStyle: 'italic', margin: '1px 0' }}>{cert.institution}</p></div><p style={{ fontSize: '11px', color: headerColor, margin: 0 }}>{cert.year}</p></div>))}</div>}
+      {cv.references?.some(r => r.name) && <div><h2 style={{ fontSize: '13px', fontWeight: 'bold', color: headerColor, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 6px 0' }}>References</h2><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>{cv.references.filter(r => r.name).map((ref, i) => (<div key={i} style={{ padding: '8px', border: `1px solid #e5e7eb`, borderRadius: '6px' }}><p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{ref.name}</p><p style={{ fontSize: '11px', color: headerColor, fontStyle: 'italic', margin: '2px 0' }}>{ref.designation}</p><p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0' }}>{ref.organization}</p><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>{ref.contact}</p></div>))}</div></div>}
+    </div>
+  );
+}
+
+// ─── CV Document Router ─────────────────────────────────────────────────────
+function CVDocument({ cv, headerColor, template }) {
+  if (template === 'modern') return <ModernTemplate cv={cv} headerColor={headerColor} />;
+  if (template === 'minimal') return <MinimalTemplate cv={cv} headerColor={headerColor} />;
+  return <ClassicTemplate cv={cv} headerColor={headerColor} />;
+}
+
+// ─── Progress Bar ───────────────────────────────────────────────────────────
+function ProgressBar({ cv }) {
+  const fields = [
+    { label: 'Name', done: !!cv.name },
+    { label: 'Email', done: !!cv.email },
+    { label: 'Phone', done: !!cv.phone },
+    { label: 'Address', done: !!cv.address },
+    { label: 'Objective', done: !!cv.objective },
+    { label: 'Education', done: cv.education.some(e => e.degree) },
+    { label: 'Experience', done: cv.experience.some(e => e.title) },
+    { label: 'Skills', done: !!cv.skills },
+    { label: 'Soft Skills', done: !!cv.softSkills },
+    { label: 'Projects', done: cv.projects.some(p => p.name) },
+    { label: 'Certifications', done: cv.certifications?.some(c => c.name) },
+    { label: 'References', done: cv.references?.some(r => r.name) },
+  ];
+  const done = fields.filter(f => f.done).length;
+  const pct = Math.round((done / fields.length) * 100);
+  const color = pct < 40 ? '#ef4444' : pct < 70 ? '#f59e0b' : '#10b981';
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-bold text-gray-800">📊 CV Completion</h3>
+        <span className="text-sm font-bold" style={{ color }}>{pct}%</span>
+      </div>
+      <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, #1e3a8a, ${color})` }}></div>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {fields.map((f, i) => (
+          <span key={i} className={`text-xs px-2 py-0.5 rounded-full font-medium ${f.done ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+            {f.done ? '✓' : '○'} {f.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Fullscreen Modal ───────────────────────────────────────────────────────
+function FullscreenModal({ cv, headerColor, template, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center overflow-y-auto py-8"
+      onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="relative">
+        <button onClick={onClose}
+          className="fixed top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-100 shadow-lg z-50 font-bold text-lg">
+          ✕
+        </button>
+        <div style={{ boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
+          <CVDocument cv={cv} headerColor={headerColor} template={template} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ─────────────────────────────────────────────────────────
 export default function CVBuilder() {
   const [activeTab, setActiveTab] = useState('builder');
   const [downloading, setDownloading] = useState(false);
@@ -161,7 +189,11 @@ export default function CVBuilder() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [loadingCV, setLoadingCV] = useState(true);
   const [headerColor, setHeaderColor] = useState('#1e3a8a');
+  const [template, setTemplate] = useState('classic');
   const [versions, setVersions] = useState([]);
+  const [showFullscreen, setShowFullscreen] = useState(false);
+  const [jobDescription, setJobDescription] = useState('');
+  const [atsResult, setAtsResult] = useState(null);
   const pdfRef = useRef();
   const token = localStorage.getItem('token');
   const [cv, setCv] = useState(emptyCV);
@@ -174,7 +206,8 @@ export default function CVBuilder() {
         if (data) {
           setCv({
             name: data.name || '', email: data.email || '', phone: data.phone || '',
-            address: data.address || '', linkedin: data.linkedin || '', objective: data.objective || '',
+            address: data.address || '', linkedin: data.linkedin || '',
+            objective: data.objective || '', photo: data.photo || '',
             education: data.education?.length ? data.education : [{ degree: '', institution: '', year: '', gpa: '' }],
             experience: data.experience?.length ? data.experience : [{ title: '', company: '', duration: '', description: '' }],
             skills: data.skills || '', softSkills: data.softSkills || '',
@@ -205,7 +238,8 @@ export default function CVBuilder() {
   const loadVersion = (version) => {
     setCv({
       name: version.data.name || '', email: version.data.email || '', phone: version.data.phone || '',
-      address: version.data.address || '', linkedin: version.data.linkedin || '', objective: version.data.objective || '',
+      address: version.data.address || '', linkedin: version.data.linkedin || '',
+      objective: version.data.objective || '', photo: version.data.photo || '',
       education: version.data.education?.length ? version.data.education : [{ degree: '', institution: '', year: '', gpa: '' }],
       experience: version.data.experience?.length ? version.data.experience : [{ title: '', company: '', duration: '', description: '' }],
       skills: version.data.skills || '', softSkills: version.data.softSkills || '',
@@ -213,6 +247,45 @@ export default function CVBuilder() {
       certifications: version.data.certifications?.length ? version.data.certifications : [{ name: '', institution: '', year: '' }],
       references: version.data.references?.length ? version.data.references : [{ name: '', designation: '', organization: '', contact: '' }],
     });
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Photo must be under 2MB!'); return; }
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = 200; canvas.height = 200;
+      ctx.drawImage(img, 0, 0, 200, 200);
+      updateField('photo', canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = URL.createObjectURL(file);
+  };
+
+  const checkATS = () => {
+    if (!jobDescription.trim()) return;
+    const jdWords = jobDescription.toLowerCase().replace(/[^a-z0-9\s+#.]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+    const cvText = [
+      cv.name, cv.objective, cv.skills, cv.softSkills,
+      ...cv.education.map(e => `${e.degree} ${e.institution}`),
+      ...cv.experience.map(e => `${e.title} ${e.company} ${e.description}`),
+      ...cv.projects.map(p => `${p.name} ${p.tech} ${p.description}`),
+      ...cv.certifications.map(c => `${c.name} ${c.institution}`),
+    ].join(' ').toLowerCase();
+
+    const stopWords = new Set(['the','and','for','are','was','with','this','that','have','from','they','will','your','been','has','but','not','you','all','can','her','him','his','its','may','our','out','per','put','say','she','use','who','why','yet']);
+    const uniqueJDWords = [...new Set(jdWords)].filter(w => !stopWords.has(w));
+    const matched = uniqueJDWords.filter(w => cvText.includes(w));
+    const missing = uniqueJDWords.filter(w => !cvText.includes(w)).slice(0, 15);
+    const score = Math.min(100, Math.round((matched.length / Math.max(uniqueJDWords.length, 1)) * 100));
+    const techKeywords = matched.filter(w =>
+      ['react','node','python','java','javascript','sql','mongodb','express','html','css',
+       'typescript','angular','vue','aws','docker','git','api','rest','agile','scrum',
+       'figma','flutter','kotlin','swift','php','laravel','django','spring'].includes(w)
+    );
+    setAtsResult({ score, matched: matched.length, total: uniqueJDWords.length, missing, techKeywords });
   };
 
   const saveCV = async () => {
@@ -239,53 +312,33 @@ export default function CVBuilder() {
       const element = pdfRef.current;
       element.style.display = 'block';
       await new Promise(resolve => setTimeout(resolve, 150));
-
       const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        logging: false,
-        foreignObjectRendering: false,
+        scale: 2, useCORS: true, allowTaint: false,
+        backgroundColor: '#ffffff', logging: false, foreignObjectRendering: false,
       });
-
       element.style.display = 'none';
-
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       const pageHeight = pdf.internal.pageSize.getHeight();
-
       if (pdfHeight > pageHeight) {
         let yOffset = 0, remaining = pdfHeight;
         while (remaining > 0) {
           pdf.addImage(imgData, 'JPEG', 0, -yOffset, pdfWidth, pdfHeight);
-          remaining -= pageHeight;
-          yOffset += pageHeight;
+          remaining -= pageHeight; yOffset += pageHeight;
           if (remaining > 0) pdf.addPage();
         }
       } else {
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       }
-
       pdf.save(`${cv.name.replace(/\s+/g, '_') || 'My'}_CV.pdf`);
-
-      // Track download
-      try {
-        await fetch('http://localhost:5001/api/cv/track-download', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      } catch (e) { console.error('Track download failed'); }
-
+      try { await fetch('http://localhost:5001/api/cv/track-download', { method: 'POST', headers: { Authorization: `Bearer ${token}` } }); } catch (e) {}
       setCv(emptyCV);
     } catch (err) {
       if (pdfRef.current) pdfRef.current.style.display = 'none';
       alert('PDF failed: ' + err.message);
-    } finally {
-      setDownloading(false);
-    }
+    } finally { setDownloading(false); }
   };
 
   const tips = [
@@ -297,11 +350,24 @@ export default function CVBuilder() {
     { icon: '💼', title: 'List relevant skills', desc: 'Include both technical and soft skills.' },
   ];
 
-  const templates = [
-    { name: 'Professional Blue', color: 'from-blue-800 to-blue-600', desc: 'Clean and corporate style' },
-    { name: 'Modern Orange', color: 'from-orange-600 to-orange-400', desc: 'Bold and creative style' },
-    { name: 'Classic Dark', color: 'from-gray-800 to-gray-600', desc: 'Traditional professional style' },
+  const templateOptions = [
+    { id: 'classic', name: '🔵 Classic Blue', desc: 'Traditional header with contact info' },
+    { id: 'modern', name: '🟠 Modern Sidebar', desc: 'Two-column with sidebar layout' },
+    { id: 'minimal', name: '⚪ Minimal Clean', desc: 'Elegant serif with border accents' },
   ];
+
+  const demoCV = {
+    name: 'John Smith', email: 'john@email.com', phone: '+94 77 123 4567',
+    address: 'Colombo, Sri Lanka', linkedin: 'linkedin.com/in/john',
+    objective: 'Passionate software engineer seeking internship opportunities.',
+    education: [{ degree: 'BSc Software Engineering', institution: 'SLIIT', year: '2021-2025', gpa: '3.8' }],
+    experience: [{ title: 'Intern Developer', company: 'Tech Corp', duration: 'Jun-Aug 2024', description: 'Built web applications.' }],
+    skills: 'React, Node.js, Python', softSkills: 'Leadership, Communication',
+    projects: [{ name: 'InternHub', tech: 'MERN Stack', description: 'Internship management system.' }],
+    certifications: [{ name: 'AWS Cloud', institution: 'Amazon', year: '2024' }],
+    references: [{ name: 'Dr. Silva', designation: 'Lecturer', organization: 'SLIIT', contact: 'silva@sliit.lk' }],
+    photo: '',
+  };
 
   if (loadingCV) return (
     <div className="flex items-center justify-center h-screen">
@@ -314,13 +380,15 @@ export default function CVBuilder() {
   return (
     <div className="p-8">
 
-      {/* Hidden PDF capture element */}
-      <div ref={pdfRef} style={{
-        display: 'none', position: 'fixed',
-        top: 0, left: '-9999px', zIndex: -1,
-      }}>
-        <CVDocument cv={cv} headerColor={headerColor} />
+      {/* Hidden PDF */}
+      <div ref={pdfRef} style={{ display: 'none', position: 'fixed', top: 0, left: '-9999px', zIndex: -1 }}>
+        <CVDocument cv={cv} headerColor={headerColor} template={template} />
       </div>
+
+      {/* Fullscreen Modal */}
+      {showFullscreen && (
+        <FullscreenModal cv={cv} headerColor={headerColor} template={template} onClose={() => setShowFullscreen(false)} />
+      )}
 
       <div className="mb-6 flex items-center justify-between">
         <div>
@@ -334,7 +402,12 @@ export default function CVBuilder() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 bg-white p-1 rounded-2xl shadow-sm border border-gray-100 w-fit">
-        {[{ id: 'builder', label: '🛠️ CV Builder' }, { id: 'tips', label: '💡 CV Tips' }, { id: 'templates', label: '📋 Templates' }].map(tab => (
+        {[
+          { id: 'builder', label: '🛠️ CV Builder' },
+          { id: 'ats', label: '🎯 ATS Checker' },
+          { id: 'tips', label: '💡 CV Tips' },
+          { id: 'templates', label: '📋 Templates' },
+        ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-gradient-to-r from-blue-800 to-orange-600 text-white shadow-lg' : 'text-gray-500 hover:text-gray-700'}`}>
             {tab.label}
@@ -342,15 +415,39 @@ export default function CVBuilder() {
         ))}
       </div>
 
+      {/* ── BUILDER TAB ── */}
       {activeTab === 'builder' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* FORM */}
           <div className="lg:col-span-2 space-y-5">
-
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-800 mb-4">👤 Personal Information</h2>
               <div className="space-y-3">
+                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+                  {cv.photo ? (
+                    <img src={cv.photo} alt="profile" className="w-16 h-16 rounded-full object-cover border-2 border-blue-200" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-800 to-orange-600 flex items-center justify-center text-white text-2xl font-bold">
+                      {cv.name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">Profile Photo <span className="text-gray-400 font-normal">(optional)</span></p>
+                    <div className="flex gap-2">
+                      <label className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-medium cursor-pointer transition-all">
+                        📷 Upload
+                        <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                      </label>
+                      {cv.photo && (
+                        <button onClick={() => updateField('photo', '')}
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-all">
+                          🗑️ Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
                 <input type="text" placeholder="Full Name *" value={cv.name} onChange={e => updateField('name', e.target.value)} className={inputCls.replace('py-2.5', 'py-3')} />
                 <div className="grid grid-cols-2 gap-3">
                   <input type="email" placeholder="Email *" value={cv.email} onChange={e => updateField('email', e.target.value)} className={inputCls.replace('py-2.5', 'py-3')} />
@@ -459,12 +556,24 @@ export default function CVBuilder() {
               ))}
             </div>
 
-            {/* Color Picker */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
-              <span className="text-sm text-gray-600 font-medium">Header Color:</span>
-              <input type="color" value={headerColor} onChange={e => setHeaderColor(e.target.value)}
-                style={{ width: '40px', height: '40px', borderRadius: '8px', border: 'none', cursor: 'pointer', padding: '2px' }} />
-              <span className="text-xs text-gray-400">Pick your CV header color</span>
+            {/* Color + Template Picker */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <h3 className="text-sm font-bold text-gray-800 mb-3">🎨 Customize</h3>
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-sm text-gray-600 font-medium">Header Color:</span>
+                <input type="color" value={headerColor} onChange={e => setHeaderColor(e.target.value)}
+                  style={{ width: '40px', height: '40px', borderRadius: '8px', border: 'none', cursor: 'pointer', padding: '2px' }} />
+                <span className="text-xs text-gray-400">Pick your header color</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {templateOptions.map(t => (
+                  <button key={t.id} onClick={() => setTemplate(t.id)}
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${template === t.id ? 'border-blue-800 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <p className="text-xs font-bold text-gray-800">{t.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{t.desc}</p>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <button onClick={saveCV} disabled={saving || !cv.name}
@@ -484,13 +593,20 @@ export default function CVBuilder() {
 
           {/* RIGHT COLUMN */}
           <div className="space-y-4">
+            <ProgressBar cv={cv} />
 
             {/* A4 Preview */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
-              <p className="text-xs text-gray-500 text-center mb-2">👁️ Live Preview (A4)</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-gray-500">👁️ Live Preview ({template})</p>
+                <button onClick={() => setShowFullscreen(true)}
+                  className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-medium transition-all">
+                  ⛶ Fullscreen
+                </button>
+              </div>
               <div style={{ overflow: 'hidden', height: '380px', position: 'relative' }}>
                 <div style={{ transform: 'scale(0.42)', transformOrigin: 'top left', width: '238%' }}>
-                  <CVDocument cv={cv} headerColor={headerColor} />
+                  <CVDocument cv={cv} headerColor={headerColor} template={template} />
                 </div>
               </div>
             </div>
@@ -533,7 +649,112 @@ export default function CVBuilder() {
         </div>
       )}
 
-      {/* TIPS TAB */}
+      {/* ── ATS CHECKER TAB ── */}
+      {activeTab === 'ats' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-2">🎯 ATS Score Checker</h2>
+              <p className="text-gray-500 text-sm mb-4">Paste a job description below to see how well your CV matches the requirements.</p>
+              <textarea
+                value={jobDescription}
+                onChange={e => { setJobDescription(e.target.value); setAtsResult(null); }}
+                placeholder={`Paste the job description here...\n\nExample:\nWe are looking for a React Developer with experience in Node.js, MongoDB, and REST APIs. The candidate should have strong communication skills and experience with Agile methodology...`}
+                rows={12}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+              <button onClick={checkATS} disabled={!jobDescription.trim() || !cv.name}
+                className="mt-3 w-full py-3 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 shadow-lg">
+                🔍 Analyze CV Match
+              </button>
+              {!cv.name && <p className="text-orange-600 text-xs mt-2 text-center">⚠️ Please fill in your CV details first!</p>}
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+              <h3 className="text-sm font-bold text-blue-800 mb-3">💡 ATS Tips</h3>
+              <ul className="space-y-2 text-xs text-blue-700">
+                <li>✦ Use exact keywords from the job description</li>
+                <li>✦ Spell out abbreviations (e.g. "Artificial Intelligence" not just "AI")</li>
+                <li>✦ Include both technical and soft skills mentioned in JD</li>
+                <li>✦ Aim for 70%+ match score for best results</li>
+                <li>✦ Tailor your CV for each job application</li>
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            {!atsResult ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center h-full flex flex-col items-center justify-center">
+                <div className="text-6xl mb-4">🎯</div>
+                <h3 className="text-lg font-bold text-gray-700 mb-2">Ready to Analyze</h3>
+                <p className="text-gray-500 text-sm">Paste a job description and click "Analyze CV Match" to see your ATS score!</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+                  <p className="text-gray-500 text-sm mb-3">Your ATS Match Score</p>
+                  <div className="relative w-36 h-36 mx-auto mb-4">
+                    <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" strokeWidth="10" />
+                      <circle cx="60" cy="60" r="50" fill="none"
+                        stroke={atsResult.score >= 70 ? '#10b981' : atsResult.score >= 50 ? '#f59e0b' : '#ef4444'}
+                        strokeWidth="10"
+                        strokeDasharray={`${(atsResult.score / 100) * 314} 314`}
+                        strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-3xl font-bold text-gray-800">{atsResult.score}%</span>
+                      <span className="text-xs text-gray-500">Match</span>
+                    </div>
+                  </div>
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold ${atsResult.score >= 70 ? 'bg-green-100 text-green-700' : atsResult.score >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                    {atsResult.score >= 70 ? '🌟 Excellent Match!' : atsResult.score >= 50 ? '👍 Good Match' : '⚠️ Needs Improvement'}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div className="bg-green-50 rounded-xl p-3">
+                      <div className="text-2xl font-bold text-green-700">{atsResult.matched}</div>
+                      <div className="text-green-600 text-xs mt-1">Keywords Matched</div>
+                    </div>
+                    <div className="bg-red-50 rounded-xl p-3">
+                      <div className="text-2xl font-bold text-red-600">{atsResult.total - atsResult.matched}</div>
+                      <div className="text-red-500 text-xs mt-1">Keywords Missing</div>
+                    </div>
+                  </div>
+                </div>
+
+                {atsResult.techKeywords.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h3 className="text-sm font-bold text-gray-800 mb-3">✅ Technical Keywords Found</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {atsResult.techKeywords.map((kw, i) => (
+                        <span key={i} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium border border-green-200">✓ {kw}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {atsResult.missing.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h3 className="text-sm font-bold text-gray-800 mb-3">❌ Missing Keywords <span className="text-gray-400 font-normal">(add these to your CV)</span></h3>
+                    <div className="flex flex-wrap gap-2">
+                      {atsResult.missing.map((kw, i) => (
+                        <span key={i} className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium border border-red-200">✕ {kw}</span>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-3">💡 Go to CV Builder and add these keywords to your skills or experience sections!</p>
+                  </div>
+                )}
+
+                <button onClick={() => setActiveTab('builder')}
+                  className="w-full py-3 bg-gradient-to-r from-blue-800 to-orange-600 text-white rounded-xl font-bold transition-all shadow-lg">
+                  ✏️ Go Back & Improve CV →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── TIPS TAB ── */}
       {activeTab === 'tips' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tips.map((tip, i) => (
@@ -551,28 +772,35 @@ export default function CVBuilder() {
         </div>
       )}
 
-      {/* TEMPLATES TAB */}
+      {/* ── TEMPLATES TAB ── */}
       {activeTab === 'templates' && (
         <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {templates.map((template, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer">
-                <div className={`h-32 bg-gradient-to-br ${template.color} flex items-center justify-center`}>
-                  <span className="text-white text-5xl">📄</span>
+            {templateOptions.map((t) => (
+              <div key={t.id}
+                onClick={() => { setTemplate(t.id); setActiveTab('builder'); }}
+                className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer ${template === t.id ? 'border-blue-800' : 'border-gray-100'}`}>
+                <div style={{ height: '160px', overflow: 'hidden', position: 'relative' }}>
+                  <div style={{ transform: 'scale(0.3)', transformOrigin: 'top left', width: '333%', pointerEvents: 'none' }}>
+                    <CVDocument cv={demoCV} headerColor={headerColor} template={t.id} />
+                  </div>
+                  {template === t.id && (
+                    <div className="absolute top-2 right-2 bg-blue-800 text-white text-xs px-2 py-1 rounded-lg font-bold">✓ Active</div>
+                  )}
                 </div>
                 <div className="p-4">
-                  <h3 className="font-bold text-gray-800">{template.name}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{template.desc}</p>
-                  <button onClick={() => setActiveTab('builder')}
-                    className="mt-3 w-full py-2 bg-gradient-to-r from-blue-800 to-orange-600 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all">
-                    Use This Style →
+                  <h3 className="font-bold text-gray-800">{t.name}</h3>
+                  <p className="text-gray-500 text-sm mt-1">{t.desc}</p>
+                  <button onClick={() => { setTemplate(t.id); setActiveTab('builder'); }}
+                    className={`mt-3 w-full py-2 rounded-xl text-sm font-medium transition-all ${template === t.id ? 'bg-blue-800 text-white' : 'bg-gradient-to-r from-blue-800 to-orange-600 text-white hover:shadow-lg'}`}>
+                    {template === t.id ? '✓ Currently Selected' : 'Use This Template →'}
                   </button>
                 </div>
               </div>
             ))}
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center">
-            <p className="text-blue-700 font-medium">💡 More templates coming soon!</p>
+            <p className="text-blue-700 font-medium">💡 Click any template to preview and use it!</p>
           </div>
         </div>
       )}
