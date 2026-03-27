@@ -157,6 +157,24 @@ const normalizeSalaryForSubmit = (value) => {
   return cleanValue;
 };
 
+const getDemoVacancy = () => {
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 15);
+
+  return {
+    title: 'Frontend Developer Intern',
+    company: 'ABC Technologies',
+    description:
+      'We are looking for a motivated Frontend Developer Intern to join our team. The candidate should have basic knowledge of React, JavaScript, HTML, CSS, and responsive web design.',
+    location: 'Colombo, Sri Lanka',
+    deadline: futureDate.toISOString().split('T')[0],
+    imageUrl: '',
+    salary: '45000.00',
+    jobType: 'Internship',
+    skills: 'React, JavaScript, HTML, CSS'
+  };
+};
+
 export default function PostVacancy() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [success, setSuccess] = useState('');
@@ -180,7 +198,7 @@ export default function PostVacancy() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        setRecentVacancies(data.slice(0, 5));
+        setRecentVacancies(Array.isArray(data) ? data.slice(0, 5) : []);
       } catch (err) {
         console.error('Failed to fetch vacancies');
       }
@@ -188,6 +206,28 @@ export default function PostVacancy() {
 
     fetchRecent();
   }, [success, token]);
+
+  const resetValidationStates = () => {
+    setSalaryError('');
+    setSalaryFocused(false);
+    setSalaryTouched(false);
+    setTitleError('');
+    setCompanyError('');
+    setLocationError('');
+    setDeadlineError('');
+    setError('');
+    setSuccess('');
+  };
+
+  const handleLoadDemo = () => {
+    setForm(getDemoVacancy());
+    resetValidationStates();
+  };
+
+  const handleClearForm = () => {
+    setForm(INITIAL_FORM);
+    resetValidationStates();
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -356,13 +396,7 @@ export default function PostVacancy() {
       if (res.ok) {
         setSuccess('Vacancy posted successfully!');
         setForm(INITIAL_FORM);
-        setSalaryError('');
-        setSalaryTouched(false);
-        setSalaryFocused(false);
-        setTitleError('');
-        setCompanyError('');
-        setLocationError('');
-        setDeadlineError('');
+        resetValidationStates();
       } else {
         const data = await res.json();
         setError(data.message || 'Failed to post vacancy');
@@ -396,6 +430,24 @@ export default function PostVacancy() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={handleLoadDemo}
+                className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-medium transition border border-blue-200"
+              >
+                Fill Demo Data
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClearForm}
+                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition"
+              >
+                Clear Form
+              </button>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Company Image <span className="text-gray-400">(optional)</span>
