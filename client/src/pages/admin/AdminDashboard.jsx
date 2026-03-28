@@ -10,6 +10,7 @@ import {
 const AUTH_API = 'http://localhost:5001/api/auth';
 const STUDY_API = 'http://localhost:5003/api/study-materials';
 const VACANCY_API = 'http://localhost:5002/api/vacancies';
+const CV_STATS_API = 'http://localhost:5001/api/cv/admin/stats';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ export default function AdminDashboard() {
   const [activities, setActivities] = useState([]);
   const [chartData, setChartData] = useState({ pie: [], bar: [] });
   const [loading, setLoading] = useState(true);
+  const [cvStats, setCvStats] = useState([]);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -42,7 +44,6 @@ export default function AdminDashboard() {
           messages: messages.filter(m => !m.isRead).length
         });
 
-        // Pie chart data - system usage
         setChartData({
           pie: [
             { name: 'Students', value: students.length, color: '#1d4ed8' },
@@ -58,7 +59,6 @@ export default function AdminDashboard() {
           ]
         });
 
-        // Build monthly registration data
         const monthlyData = Array.from({ length: 6 }, (_, i) => {
           const d = new Date();
           d.setMonth(d.getMonth() - (5 - i));
@@ -72,7 +72,13 @@ export default function AdminDashboard() {
 
         setChartData(prev => ({ ...prev, monthly: monthlyData }));
 
-        // Activities
+        // CV Stats
+        try {
+          const cvRes = await fetch(CV_STATS_API, { headers: { Authorization: `Bearer ${token}` } });
+          const cvData = await cvRes.json();
+          setCvStats(Array.isArray(cvData) ? cvData : []);
+        } catch (e) { setCvStats([]); }
+
         const userActivities = students.slice(0, 2).map(u => ({
           id: u._id, icon: '👤', text: `${u.name} registered as student`,
           time: new Date(u.createdAt), color: 'bg-blue-100 text-blue-600'
@@ -119,15 +125,11 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Top Banner */}
-      <div
-        className="relative px-8 py-8"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/92 via-blue-800/88 to-orange-00/82"></div>
+      <div className="relative px-8 py-8" style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80')`,
+        backgroundSize: 'cover', backgroundPosition: 'center'
+      }}>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/92 via-blue-800/88 "></div>
         <div className="relative z-10 max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <p className="text-orange-300 text-sm font-medium mb-1">⚙️ Admin Panel</p>
@@ -151,15 +153,10 @@ export default function AdminDashboard() {
         {/* Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 -mt-6">
           {statCards.map(card => (
-            <div
-              key={card.label}
-              onClick={() => navigate(card.path)}
-              className="bg-white rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100"
-            >
+            <div key={card.label} onClick={() => navigate(card.path)}
+              className="bg-white rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 ${card.light} rounded-xl flex items-center justify-center text-xl`}>
-                  {card.icon}
-                </div>
+                <div className={`w-10 h-10 ${card.light} rounded-xl flex items-center justify-center text-xl`}>{card.icon}</div>
                 <span className={`text-xs font-medium ${card.light} px-2 py-1 rounded-full`}>View →</span>
               </div>
               <div className="text-2xl font-bold text-gray-800">{card.value}</div>
@@ -171,8 +168,6 @@ export default function AdminDashboard() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-
-          {/* Bar Chart - System Overview */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-1">System Overview</h2>
             <p className="text-gray-400 text-sm mb-5">Total count per category</p>
@@ -181,9 +176,7 @@ export default function AdminDashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b7280' }} />
                 <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
-                />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
                 <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                   {chartData.bar?.map((entry, index) => (
                     <Cell key={index} fill={entry.fill} />
@@ -193,35 +186,24 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Pie Chart - Distribution */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-1">System Distribution</h2>
             <p className="text-gray-400 text-sm mb-5">Percentage breakdown</p>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie
-                  data={chartData.pie}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
+                <Pie data={chartData.pie} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
                   {chartData.pie?.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
-                />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Monthly Student Registration Bar Chart */}
+        {/* Monthly Registration */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-1">Student Registrations</h2>
           <p className="text-gray-400 text-sm mb-5">Monthly student sign-ups over last 6 months</p>
@@ -230,26 +212,20 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} />
               <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
-              <Tooltip
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
-              />
+              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
               <Bar dataKey="students" fill="#1d4ed8" radius={[6, 6, 0, 0]} name="Students" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Quick Actions + System Status */}
+        {/* Quick Actions + Recent Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-5">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-3">
               {quickActions.map(action => (
-                <button
-                  key={action.label}
-                  onClick={() => navigate(action.path)}
-                  className={`${action.color} text-white p-4 rounded-xl text-center transition-all hover:shadow-lg hover:-translate-y-0.5`}
-                >
+                <button key={action.label} onClick={() => navigate(action.path)}
+                  className={`${action.color} text-white p-4 rounded-xl text-center transition-all hover:shadow-lg hover:-translate-y-0.5`}>
                   <div className="text-2xl mb-1">{action.icon}</div>
                   <div className="text-xs font-medium">{action.label}</div>
                 </button>
@@ -275,7 +251,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Recent Activity */}
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
@@ -304,6 +279,76 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
+
+        {/* CV Downloads Section */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-gray-800">📄 CV Downloads</h2>
+              <p className="text-gray-500 text-sm mt-0.5">Students who downloaded their CV</p>
+            </div>
+            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+              {cvStats.length} students
+            </span>
+          </div>
+
+          {cvStats.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              <div className="text-4xl mb-2">📄</div>
+              <p>No CV downloads yet</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Student</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Downloads</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Download</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {cvStats.map((cv, i) => (
+                    <tr key={i} className="hover:bg-gray-50 transition-all">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-800 to-orange-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                            {cv.userId?.name?.charAt(0).toUpperCase() || cv.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <p className="font-semibold text-gray-800 text-sm">
+                            {cv.userId?.name || cv.name || 'Unknown'}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 text-sm">{cv.userId?.email || '—'}</td>
+                      <td className="py-3 px-4 text-center">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-bold">
+                          ⬇️ {cv.downloadCount}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 text-sm">
+                        {cv.lastDownloaded
+                          ? new Date(cv.lastDownloaded).toLocaleDateString() + ' ' +
+                            new Date(cv.lastDownloaded).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 text-sm">
+                        {cv.userId?.createdAt
+                          ? new Date(cv.userId.createdAt).toLocaleDateString()
+                          : cv.createdAt
+                          ? new Date(cv.createdAt).toLocaleDateString()
+                          : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

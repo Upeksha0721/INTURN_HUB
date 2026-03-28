@@ -4,11 +4,11 @@ import Spinner from '../../components/Spinner';
 const STUDY_API = 'http://localhost:5003/api/study-materials';
 
 const categoryConfig = {
-  frontend:  { color: 'bg-blue-100 text-blue-700',   border: 'border-blue-200',   icon: '🎨', gradient: 'from-blue-500 to-indigo-500' },
-  backend:   { color: 'bg-green-100 text-green-700', border: 'border-green-200',  icon: '⚙️', gradient: 'from-green-500 to-teal-500' },
+  frontend:  { color: 'bg-blue-100 text-blue-700',    border: 'border-blue-200',   icon: '🎨', gradient: 'from-blue-500 to-indigo-500' },
+  backend:   { color: 'bg-green-100 text-green-700',  border: 'border-green-200',  icon: '⚙️', gradient: 'from-green-500 to-teal-500' },
   database:  { color: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-200', icon: '🗄️', gradient: 'from-yellow-500 to-orange-500' },
-  devops:    { color: 'bg-red-100 text-red-700',     border: 'border-red-200',    icon: '🚀', gradient: 'from-red-500 to-pink-500' },
-  other:     { color: 'bg-gray-100 text-gray-700',   border: 'border-gray-200',   icon: '📄', gradient: 'from-gray-500 to-slate-500' },
+  uiux:      { color: 'bg-purple-100 text-purple-700', border: 'border-purple-200', icon: '✏️', gradient: 'from-purple-500 to-pink-500' },
+  other:     { color: 'bg-gray-100 text-gray-700',    border: 'border-gray-200',   icon: '📄', gradient: 'from-gray-500 to-slate-500' },
 };
 
 export default function StudyMaterials() {
@@ -36,7 +36,7 @@ export default function StudyMaterials() {
     fetchMaterials();
   }, []);
 
-  const categories = ['All', 'frontend', 'backend', 'database', 'devops', 'other'];
+  const categories = ['All', 'frontend', 'backend', 'database', 'uiux', 'other'];
 
   const filtered = materials.filter(m => {
     const matchSearch = m.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,16 +45,25 @@ export default function StudyMaterials() {
     return matchSearch && matchCat;
   });
 
+  // Returns updatedAt if edited, otherwise createdAt
+  const getDisplayDate = (m) => {
+    const isEdited = m.updatedAt && m.updatedAt !== m.createdAt;
+    return {
+      date: new Date(isEdited ? m.updatedAt : m.createdAt).toLocaleDateString(),
+      isEdited
+    };
+  };
+
   if (loading) return <Spinner message="Loading study materials..." />;
 
   return (
     <div className="min-h-screen bg-gray-50">
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-8 py-10">
+      <div className="bg-gradient-to-r from-gray-900 via-blue-900 to-gray-800 px-8 py-10">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold text-white mb-2">📚 Study Materials</h1>
-          <p className="text-indigo-200 mb-6">Access curated resources to prepare for your internship journey</p>
+          <p className="text-gray-400 mb-6">Access curated resources to prepare for your internship journey</p>
 
           {/* Search */}
           <div className="relative max-w-lg">
@@ -64,7 +73,7 @@ export default function StudyMaterials() {
               placeholder="Search materials..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-indigo-300 focus:outline-none focus:border-white/40 text-sm"
+              className="w-full pl-11 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-400/60 text-sm"
             />
           </div>
         </div>
@@ -73,19 +82,23 @@ export default function StudyMaterials() {
       <div className="max-w-5xl mx-auto px-8 py-8">
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 -mt-6">
-          {[
-            { label: 'Total Materials', value: materials.length, icon: '📚', color: 'text-indigo-600' },
-            { label: 'Frontend', value: materials.filter(m => m.category === 'frontend').length, icon: '🎨', color: 'text-blue-600' },
-            { label: 'Backend', value: materials.filter(m => m.category === 'backend').length, icon: '⚙️', color: 'text-green-600' },
-            { label: 'Database', value: materials.filter(m => m.category === 'database').length, icon: '🗄️', color: 'text-yellow-600' },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-              <div className="text-2xl mb-1">{stat.icon}</div>
-              <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-              <div className="text-gray-500 text-xs mt-1">{stat.label}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 -mt-6">
+          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div className="text-2xl mb-1">📚</div>
+            <div className="text-2xl font-bold text-indigo-600">{materials.length}</div>
+            <div className="text-gray-500 text-xs mt-1">Total Materials</div>
+          </div>
+          {Object.entries(categoryConfig).map(([key, config]) => {
+            const count = materials.filter(m => m.category === key).length;
+            if (count === 0) return null;
+            return (
+              <div key={key} className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+                <div className="text-2xl mb-1">{config.icon}</div>
+                <div className={`text-2xl font-bold ${config.color.split(' ')[1]}`}>{count}</div>
+                <div className="text-gray-500 text-xs mt-1 capitalize">{key === 'uiux' ? 'UI/UX Design' : key}</div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Category Filter */}
@@ -96,7 +109,7 @@ export default function StudyMaterials() {
               onClick={() => setActiveCategory(cat)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
                 activeCategory === cat
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-200'
                   : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
               }`}
             >
@@ -121,6 +134,7 @@ export default function StudyMaterials() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((material) => {
               const config = categoryConfig[material.category] || categoryConfig.other;
+              const { date, isEdited } = getDisplayDate(material);
               return (
                 <div
                   key={material._id}
@@ -146,7 +160,10 @@ export default function StudyMaterials() {
 
                     {/* Meta */}
                     <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
-                      <span>📅 {new Date(material.createdAt).toLocaleDateString()}</span>
+                      <span>📅 {date}</span>
+                      {isEdited && (
+                        <span className="text-blue-400 font-medium">✏️ updated</span>
+                      )}
                     </div>
 
                     {/* Download Button */}
