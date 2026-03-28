@@ -119,6 +119,7 @@ export default function AdminDashboard() {
     { label: 'Manage Users', icon: '👥', color: 'bg-orange-500 hover:bg-orange-600', path: '/admin/users' },
     { label: 'Upload Material', icon: '📤', color: 'bg-blue-600 hover:bg-blue-700', path: '/admin/upload-material' },
     { label: 'View Messages', icon: '📬', color: 'bg-orange-600 hover:bg-orange-700', path: '/admin/messages' },
+    { label: 'Create Quiz', icon: '🧠', color: 'bg-green-500 hover:bg-green-600', path: '/admin/create-quiz' },
   ];
 
   return (
