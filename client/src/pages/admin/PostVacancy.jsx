@@ -44,12 +44,10 @@ const validateSalary = (value) => {
 const validateTitle = (value) => {
   if (!value.trim()) return 'Job title is required';
 
-  // Check if it contains at least one letter
   if (!/[a-zA-Z]/.test(value)) {
     return 'Job title must contain letters';
   }
 
-  // Check if it contains any numbers
   if (/\d/.test(value)) {
     return 'Job title cannot contain numbers';
   }
@@ -60,12 +58,10 @@ const validateTitle = (value) => {
 const validateCompany = (value) => {
   if (!value.trim()) return 'Company name is required';
 
-  // Check if it contains at least one letter
   if (!/[a-zA-Z]/.test(value)) {
     return 'Company name must contain letters';
   }
 
-  // Check if it contains any numbers
   if (/\d/.test(value)) {
     return 'Company name cannot contain numbers';
   }
@@ -76,12 +72,10 @@ const validateCompany = (value) => {
 const validateLocation = (value) => {
   if (!value.trim()) return 'Location is required';
 
-  // Check if it contains letters or numbers
   if (!/[a-zA-Z0-9]/.test(value)) {
     return 'Location must contain letters or numbers';
   }
 
-  // Check for special symbols (excluding common separators like comma, space, dash, period)
   if (/[^a-zA-Z0-9\s,\-\.]/.test(value)) {
     return 'Location cannot contain special symbols';
   }
@@ -273,7 +267,6 @@ export default function PostVacancy() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate all fields
     const titleError = validateTitle(form.title);
     const companyError = validateCompany(form.company);
     const locationError = validateLocation(form.location);
@@ -285,7 +278,6 @@ export default function PostVacancy() {
     setSalaryError(salaryError);
     setSalaryTouched(true);
 
-    // Check if any validation errors exist
     if (titleError || companyError || locationError || salaryError) {
       setError('Please correct the validation errors before submitting.');
       return;
@@ -334,22 +326,22 @@ export default function PostVacancy() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">💼 Post New Vacancy</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Post New Vacancy</h1>
         <p className="text-gray-500 mt-1">Create a new internship vacancy for students.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form - Left Side */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-              ✅ {success}
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+              {success}
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-              ❌ {error}
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              {error}
             </div>
           )}
 
@@ -363,21 +355,21 @@ export default function PostVacancy() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100"
               />
               {form.imageUrl && (
                 <div className="mt-2 relative">
                   <img
                     src={form.imageUrl}
                     alt="preview"
-                    className="h-40 w-full object-cover rounded-xl border"
+                    className="h-40 w-full object-cover rounded-lg border"
                   />
                   <button
                     type="button"
                     onClick={() => setForm({ ...form, imageUrl: '' })}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-red-600"
+                    className="absolute top-2 right-2 bg-[#1e3a8a] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-[#1e3a8a]/90"
                   >
-                    ✕
+                    ×
                   </button>
                 </div>
               )}
@@ -392,10 +384,10 @@ export default function PostVacancy() {
                   placeholder="e.g. Frontend Developer Intern"
                   value={form.title}
                   onChange={handleTitleChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm ${
                     titleError
-                      ? 'border-red-400 focus:ring-red-500'
-                      : 'border-gray-200 focus:ring-blue-500'
+                      ? 'border-red-400'
+                      : 'border-gray-200'
                   }`}
                   required
                 />
@@ -411,10 +403,10 @@ export default function PostVacancy() {
                   placeholder="e.g. Google Sri Lanka"
                   value={form.company}
                   onChange={handleCompanyChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm ${
                     companyError
-                      ? 'border-red-400 focus:ring-red-500'
-                      : 'border-gray-200 focus:ring-blue-500'
+                      ? 'border-red-400'
+                      : 'border-gray-200'
                   }`}
                   required
                 />
@@ -433,10 +425,10 @@ export default function PostVacancy() {
                   placeholder="e.g. Colombo, Sri Lanka"
                   value={form.location}
                   onChange={handleLocationChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm ${
                     locationError
-                      ? 'border-red-400 focus:ring-red-500'
-                      : 'border-gray-200 focus:ring-blue-500'
+                      ? 'border-red-400'
+                      : 'border-gray-200'
                   }`}
                   required
                 />
@@ -450,7 +442,7 @@ export default function PostVacancy() {
                 <select
                   value={form.jobType}
                   onChange={(e) => setForm({ ...form, jobType: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm"
                 >
                   <option>Internship</option>
                   <option>Full-time</option>
@@ -472,10 +464,10 @@ export default function PostVacancy() {
                   onChange={handleSalaryChange}
                   onFocus={handleSalaryFocus}
                   onBlur={handleSalaryBlur}
-                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm ${
                     salaryTouched && salaryError
-                      ? 'border-red-400 focus:ring-red-500'
-                      : 'border-gray-200 focus:ring-blue-500'
+                      ? 'border-red-400'
+                      : 'border-gray-200'
                   }`}
                 />
                 {salaryTouched && salaryError && (
@@ -490,7 +482,7 @@ export default function PostVacancy() {
                   min={new Date().toISOString().split('T')[0]}
                   value={form.deadline}
                   onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm"
                   required
                 />
               </div>
@@ -506,7 +498,7 @@ export default function PostVacancy() {
                 placeholder="e.g. React, Node.js, MongoDB"
                 value={form.skills}
                 onChange={(e) => setForm({ ...form, skills: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm"
               />
             </div>
 
@@ -518,7 +510,7 @@ export default function PostVacancy() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm resize-none"
                 required
               />
             </div>
@@ -526,7 +518,7 @@ export default function PostVacancy() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-semibold py-3.5 rounded-xl transition-all disabled:opacity-50 shadow-lg"
+              className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white font-semibold py-3.5 rounded-lg transition-all disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -534,20 +526,19 @@ export default function PostVacancy() {
                   Posting...
                 </span>
               ) : (
-                '🚀 Post Vacancy'
+                'Post Vacancy'
               )}
             </button>
           </form>
         </div>
 
         {/* Recent Vacancies - Right Side */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-fit sticky top-6">
           <h2 className="text-lg font-bold text-gray-800 mb-1">Recently Posted</h2>
           <p className="text-gray-400 text-sm mb-5">Last 5 vacancies uploaded</p>
 
           {recentVacancies.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
-              <div className="text-4xl mb-2">💼</div>
               <p className="text-sm">No vacancies yet</p>
             </div>
           ) : (
@@ -555,22 +546,21 @@ export default function PostVacancy() {
               {recentVacancies.map((v, index) => (
                 <div
                   key={v._id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all"
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#1e3a8a] hover:bg-blue-50 transition-all"
                 >
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold text-sm shrink-0">
+                  <div className="w-8 h-8 bg-[#1e3a8a] rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0">
                     {index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-800 text-sm truncate">{v.title}</p>
                     <p className="text-gray-400 text-xs mt-0.5">
-                      🕒 {new Date(v.createdAt).toLocaleDateString()}{' '}
+                      {new Date(v.createdAt).toLocaleDateString()}{' '}
                       {new Date(v.createdAt).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
                     </p>
                   </div>
-                  <span className="w-2 h-2 bg-orange-400 rounded-full shrink-0"></span>
                 </div>
               ))}
             </div>
