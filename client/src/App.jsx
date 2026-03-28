@@ -15,7 +15,6 @@ import PostVacancy from './pages/admin/PostVacancy';
 import ManageVacancies from './pages/admin/ManageVacancies';
 import ManageApplications from './pages/admin/ManageApplications';
 import UploadMaterial from './pages/admin/UploadMaterial';
-import CreateQuiz from './pages/admin/CreateQuiz';
 import LandingPage from './pages/LandingPage';
 import Messages from './pages/admin/Messages';
 import CVBuilder from './pages/student/CVBuilder';
@@ -95,9 +94,7 @@ function AppRoutes() {
       <Route path="/admin/upload-material" element={
         <ProtectedRoute adminOnly={true}><AdminLayout><UploadMaterial /></AdminLayout></ProtectedRoute>
       } />
-      <Route path="/admin/create-quiz" element={
-        <ProtectedRoute adminOnly={true}><AdminLayout><CreateQuiz /></AdminLayout></ProtectedRoute>
-      } />
+      
       <Route path="/admin/messages" element={
         <ProtectedRoute adminOnly={true}><AdminLayout><Messages /></AdminLayout></ProtectedRoute>
       } />
