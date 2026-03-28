@@ -33,7 +33,20 @@ export default function UploadMaterial() {
       uiux: 'bg-purple-100 text-purple-700',
       other: 'bg-gray-100 text-gray-700'
     };
-    return colors[cat] || 'bg-gray-100 text-gray-700';
+    return colors[cat] || 'bg-gray-50 text-gray-700';
+  };
+
+  const fetchMaterials = async () => {
+    try {
+      const res = await fetch(STUDY_API, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setAllMaterials(data);
+      setRecentMaterials(data.slice(0, 5));
+    } catch (err) {
+      console.error('Failed to fetch materials');
+    }
   };
 
   const fetchMaterials = async () => {

@@ -9,8 +9,8 @@ const navItems = [
   { path: '/admin/vacancies',      label: 'Manage Vacancies', icon: '💼' },
   { path: '/admin/applications',   label: 'Applications',     icon: '📋' },
   { path: '/admin/upload-material',label: 'Upload Material',  icon: '📚' },
-  { path: '/admin/create-quiz',    label: 'Create Quiz',      icon: '🧠' },
   { path: '/admin/messages',       label: 'Messages',         icon: '📬' },
+  { path: '/admin/quizzes',        label: 'Manage Quizzes',   icon: '🧠' },
 ];
 
 export default function AdminSidebar() {
