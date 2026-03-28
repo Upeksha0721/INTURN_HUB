@@ -166,7 +166,7 @@ const getDemoVacancy = () => {
     company: 'ABC Technologies',
     description:
       'We are looking for a motivated Frontend Developer Intern to join our team. The candidate should have basic knowledge of React, JavaScript, HTML, CSS, and responsive web design.',
-    location: 'Colombo, Sri Lanka',
+    location: 'Colombo',
     deadline: futureDate.toISOString().split('T')[0],
     imageUrl: '',
     salary: '45000.00',
