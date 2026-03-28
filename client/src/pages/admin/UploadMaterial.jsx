@@ -12,28 +12,41 @@ export default function UploadMaterial() {
   const [loading, setLoading] = useState(false);
   const [recentMaterials, setRecentMaterials] = useState([]);
   const [allMaterials, setAllMaterials] = useState([]);
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'manage'
   const [editingId, setEditingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const token = localStorage.getItem('token');
 
   const categories = [
-    { value: 'frontend', label: 'Frontend' },
-    { value: 'backend', label: 'Backend' },
-    { value: 'database', label: 'Database' },
-    { value: 'uiux', label: 'UI/UX Design' },
-    { value: 'other', label: 'Other' }
+    { value: 'frontend', label: '🎨 Frontend' },
+    { value: 'backend', label: '⚙️ Backend' },
+    { value: 'database', label: '🗄️ Database' },
+    { value: 'uiux', label: '✏️ UI/UX Design' },
+    { value: 'other', label: '📦 Other' }
   ];
 
   const categoryColor = (cat) => {
     const colors = {
-      frontend: 'bg-blue-50 text-blue-700',
-      backend: 'bg-yellow-50 text-yellow-700',
-      database: 'bg-blue-50 text-blue-700',
-      uiux: 'bg-yellow-50 text-yellow-700',
-      other: 'bg-gray-50 text-gray-700'
+      frontend: 'bg-blue-100 text-blue-700',
+      backend: 'bg-green-100 text-green-700',
+      database: 'bg-yellow-100 text-yellow-700',
+      uiux: 'bg-purple-100 text-purple-700',
+      other: 'bg-gray-100 text-gray-700'
     };
     return colors[cat] || 'bg-gray-50 text-gray-700';
+  };
+
+  const fetchMaterials = async () => {
+    try {
+      const res = await fetch(STUDY_API, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setAllMaterials(data);
+      setRecentMaterials(data.slice(0, 5));
+    } catch (err) {
+      console.error('Failed to fetch materials');
+    }
   };
 
   const fetchMaterials = async () => {
@@ -57,6 +70,7 @@ export default function UploadMaterial() {
     e.preventDefault();
     setError('');
 
+    // Validation
     const onlyNumbers = /^\d+$/.test(form.title.trim());
     if (onlyNumbers) {
       setError('Title cannot contain only numbers. Please enter a valid title.');
@@ -145,7 +159,7 @@ export default function UploadMaterial() {
     return (
       <div>
         <p className="text-xs text-gray-400 whitespace-nowrap">{formatDate(isEdited ? m.updatedAt : m.createdAt)}</p>
-        {isEdited && <p className="text-xs text-blue-600 font-medium">edited</p>}
+        {isEdited && <p className="text-xs text-blue-400 font-medium">✏️ edited</p>}
       </div>
     );
   };
@@ -154,61 +168,61 @@ export default function UploadMaterial() {
     <div className="p-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Study Material Management</h1>
+        <h1 className="text-3xl font-bold text-gray-800">📚 Study Material Management</h1>
         <p className="text-gray-500 mt-1">Upload, edit and manage study materials for students.</p>
       </div>
 
       {/* Global Messages */}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-5">
-          {success}
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-5 flex items-center gap-2">
+          ✅ {success}
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-5">
-          {error}
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 flex items-center gap-2">
+          ❌ {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
         <button
           onClick={() => setActiveTab('upload')}
           className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
             activeTab === 'upload'
-              ? 'bg-[#1e3a8a] text-white'
+              ? 'bg-gray-900 text-white shadow'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          {editingId ? 'Edit Material' : 'Upload'}
+          {editingId ? '✏️ Edit Material' : '⬆️ Upload'}
         </button>
         <button
           onClick={() => setActiveTab('manage')}
           className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
             activeTab === 'manage'
-              ? 'bg-[#1e3a8a] text-white'
+              ? 'bg-gray-900 text-white shadow'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          Manage ({allMaterials.length})
+          📋 Manage ({allMaterials.length})
         </button>
       </div>
 
-      {/* Upload / Edit Tab */}
+      {/* ── UPLOAD / EDIT TAB ── */}
       {activeTab === 'upload' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Form */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
             {editingId && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-5 flex items-center justify-between text-sm">
-                <span>You are editing an existing material</span>
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-5 flex items-center justify-between text-sm">
+                <span>✏️ You are editing an existing material</span>
                 <button
                   onClick={handleCancelEdit}
-                  className="text-blue-600 hover:text-blue-800 font-semibold ml-4"
+                  className="text-blue-400 hover:text-blue-700 font-semibold ml-4"
                 >
-                  Cancel Edit
+                  ✕ Cancel Edit
                 </button>
               </div>
             )}
@@ -221,7 +235,7 @@ export default function UploadMaterial() {
                   placeholder="e.g. React.js Fundamentals"
                   value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   required
                 />
               </div>
@@ -231,7 +245,7 @@ export default function UploadMaterial() {
                 <select
                   value={form.category}
                   onChange={e => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   required
                 >
                   <option value="">Select a category</option>
@@ -248,7 +262,7 @@ export default function UploadMaterial() {
                   placeholder="https://drive.google.com/file/... or https://example.com/material.pdf"
                   value={form.fileUrl}
                   onChange={e => setForm({ ...form, fileUrl: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   required
                 />
               </div>
@@ -262,24 +276,24 @@ export default function UploadMaterial() {
                   value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
                   rows={4}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm resize-none ${
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none ${
                     !form.description.trim() && error.includes('Description')
                       ? 'border-red-400 bg-red-50'
                       : 'border-gray-200'
                   }`}
                 />
                 {!form.description.trim() && (
-                  <p className="text-xs text-gray-400 mt-1">Description is required</p>
+                  <p className="text-xs text-gray-400 mt-1">⚠️ Description is required</p>
                 )}
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full text-white font-semibold py-3.5 rounded-lg transition-all disabled:opacity-50 ${
+                className={`w-full text-white font-semibold py-3.5 rounded-xl transition-all disabled:opacity-50 shadow-lg ${
                   editingId
-                    ? 'bg-[#1e3a8a] hover:bg-[#1e3a8a]/90'
-                    : 'bg-[#1e3a8a] hover:bg-[#1e3a8a]/90'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900'
+                    : 'bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700'
                 }`}
               >
                 {loading ? (
@@ -287,35 +301,37 @@ export default function UploadMaterial() {
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     {editingId ? 'Updating...' : 'Uploading...'}
                   </span>
-                ) : editingId ? 'Update Material' : 'Upload Material'}
+                ) : editingId ? '💾 Update Material' : '📤 Upload Material'}
               </button>
             </form>
           </div>
 
           {/* Recently Uploaded sidebar */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-fit sticky top-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
             <h2 className="text-lg font-bold text-gray-800 mb-1">Recently Uploaded</h2>
             <p className="text-gray-400 text-sm mb-5">Last 5 materials added</p>
             {recentMaterials.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
+                <div className="text-4xl mb-2">📚</div>
                 <p className="text-sm">No materials yet</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {recentMaterials.map((m, index) => (
-                  <div key={m._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#1e3a8a] hover:bg-blue-50 transition-all">
-                    <div className="w-8 h-8 bg-[#1e3a8a] rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  <div key={m._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold text-sm shrink-0">
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-800 text-sm truncate">{m.title}</p>
                       <p className="text-gray-400 text-xs mt-0.5">
-                        {formatDate(m.updatedAt && m.updatedAt !== m.createdAt ? m.updatedAt : m.createdAt)}
+                        🕒 {formatDate(m.updatedAt && m.updatedAt !== m.createdAt ? m.updatedAt : m.createdAt)}
                       </p>
                       {m.updatedAt && m.updatedAt !== m.createdAt && (
-                        <p className="text-blue-600 text-xs font-medium">edited</p>
+                        <p className="text-blue-400 text-xs font-medium">✏️ edited</p>
                       )}
                     </div>
+                    <span className="w-2 h-2 bg-orange-400 rounded-full shrink-0"></span>
                   </div>
                 ))}
               </div>
@@ -324,28 +340,29 @@ export default function UploadMaterial() {
         </div>
       )}
 
-      {/* Manage Tab */}
+      {/* ── MANAGE TAB ── */}
       {activeTab === 'manage' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-800">All Study Materials</h2>
               <p className="text-gray-400 text-sm">{allMaterials.length} materials total</p>
             </div>
             <button
               onClick={() => { handleCancelEdit(); setActiveTab('upload'); }}
-              className="bg-[#1e3a8a] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#1e3a8a]/90 transition-all"
+              className="bg-gradient-to-r from-blue-800 to-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-all"
             >
-              Add New
+              + Add New
             </button>
           </div>
 
           {allMaterials.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
+              <div className="text-5xl mb-3">📭</div>
               <p className="font-semibold text-gray-500">No materials uploaded yet</p>
               <button
                 onClick={() => setActiveTab('upload')}
-                className="mt-4 px-5 py-2.5 bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold hover:bg-[#1e3a8a]/90 transition-all"
+                className="mt-4 px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-semibold hover:bg-gray-700 transition-all"
               >
                 Upload First Material
               </button>
@@ -363,7 +380,7 @@ export default function UploadMaterial() {
                     <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-50">
                   {allMaterials.map((m, i) => (
                     <tr key={m._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 text-sm text-gray-400 font-semibold">{i + 1}</td>
@@ -372,13 +389,13 @@ export default function UploadMaterial() {
                           href={m.fileUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-sm font-semibold text-gray-800 hover:text-[#1e3a8a] transition-colors"
+                          className="text-sm font-semibold text-gray-800 hover:text-blue-600 transition-colors"
                         >
                           {m.title}
                         </a>
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${categoryColor(m.category)}`}>
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${categoryColor(m.category)}`}>
                           {categories.find(c => c.value === m.category)?.label || m.category}
                         </span>
                       </td>
@@ -394,15 +411,15 @@ export default function UploadMaterial() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEdit(m)}
-                            className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-all"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-all"
                           >
-                            Edit
+                            ✏️ Edit
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(m._id)}
-                            className="px-3 py-1.5 bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs font-semibold rounded-lg hover:bg-yellow-100 transition-all"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-all"
                           >
-                            Delete
+                            🗑️ Delete
                           </button>
                         </div>
                       </td>
@@ -415,11 +432,12 @@ export default function UploadMaterial() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* ── DELETE CONFIRMATION MODAL ── */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full">
             <div className="text-center mb-6">
+              <div className="text-5xl mb-3">🗑️</div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Material</h3>
               <p className="text-gray-500 text-sm">
                 Are you sure you want to delete this material? This action{' '}
@@ -429,13 +447,13 @@ export default function UploadMaterial() {
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-all"
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
-                className="flex-1 py-2.5 rounded-lg bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white font-semibold text-sm transition-all"
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-all"
               >
                 Yes, Delete
               </button>

@@ -72,6 +72,7 @@ export default function AdminDashboard() {
 
         setChartData(prev => ({ ...prev, monthly: monthlyData }));
 
+        // CV Stats
         try {
           const cvRes = await fetch(CV_STATS_API, { headers: { Authorization: `Bearer ${token}` } });
           const cvData = await cvRes.json();
@@ -126,12 +127,12 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Top Banner with image */}
+      {/* Top Banner */}
       <div className="relative px-8 py-8" style={{
         backgroundImage: `url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80')`,
         backgroundSize: 'cover', backgroundPosition: 'center'
       }}>
-        <div className="absolute inset-0 bg-[#1e3a8a]/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/92 via-blue-800/88 "></div>
         <div className="relative z-10 max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <p className="text-yellow-500 text-sm font-medium mb-1">Admin Panel</p>
@@ -156,14 +157,10 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 -mt-6">
           {statCards.map(card => (
             <div key={card.label} onClick={() => navigate(card.path)}
-              className="bg-white rounded-lg shadow-sm p-5 cursor-pointer hover:shadow-md transition-all border border-gray-200">
+              className="bg-white rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 bg-blue-20 rounded-lg flex items-center justify-center">
-                  <div className="w-2 h-2 bg-[#1e3a8a] rounded-full"></div>
-                </div>
-                <span className="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
-                  View
-                </span>
+                <div className={`w-10 h-10 ${card.light} rounded-xl flex items-center justify-center text-xl`}>{card.icon}</div>
+                <span className={`text-xs font-medium ${card.light} px-2 py-1 rounded-full`}>View →</span>
               </div>
               <div className="text-2xl font-bold text-gray-800">{card.value}</div>
               <div className="text-gray-500 text-sm mt-1">{card.label}</div>
@@ -173,7 +170,7 @@ export default function AdminDashboard() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-1">System Overview</h2>
             <p className="text-gray-400 text-sm mb-5">Total count per category</p>
             <ResponsiveContainer width="100%" height={220}>
@@ -181,8 +178,8 @@ export default function AdminDashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b7280' }} />
                 <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
-                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }} />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                   {chartData.bar?.map((entry, index) => (
                     <Cell key={index} fill={entry.fill} />
                   ))}
@@ -191,7 +188,7 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-1">System Distribution</h2>
             <p className="text-gray-400 text-sm mb-5">Percentage breakdown</p>
             <ResponsiveContainer width="100%" height={220}>
@@ -201,7 +198,7 @@ export default function AdminDashboard() {
                     <Cell key={index} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -209,7 +206,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Monthly Registration */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-1">Student Registrations</h2>
           <p className="text-gray-400 text-sm mb-5">Monthly student sign-ups over last 6 months</p>
           <ResponsiveContainer width="100%" height={200}>
@@ -217,21 +214,22 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} />
               <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }} />
-              <Bar dataKey="students" fill="#1e3a8a" radius={[4, 4, 0, 0]} name="Students" />
+              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+              <Bar dataKey="students" fill="#1d4ed8" radius={[6, 6, 0, 0]} name="Students" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Quick Actions + Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-5">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-3">
               {quickActions.map(action => (
                 <button key={action.label} onClick={() => navigate(action.path)}
-                  className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white p-4 rounded-lg text-center transition-all">
-                  <div className="text-sm font-medium">{action.label}</div>
+                  className={`${action.color} text-white p-4 rounded-xl text-center transition-all hover:shadow-lg hover:-translate-y-0.5`}>
+                  <div className="text-2xl mb-1">{action.icon}</div>
+                  <div className="text-xs font-medium">{action.label}</div>
                 </button>
               ))}
             </div>
@@ -255,7 +253,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
               <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Latest updates</span>
@@ -283,26 +281,27 @@ export default function AdminDashboard() {
         </div>
 
         {/* CV Downloads Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">CV Downloads</h2>
+              <h2 className="text-lg font-bold text-gray-800">📄 CV Downloads</h2>
               <p className="text-gray-500 text-sm mt-0.5">Students who downloaded their CV</p>
             </div>
-            <span className="px-3 py-1 bg-blue-50 text-[#1e3a8a] rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
               {cvStats.length} students
             </span>
           </div>
 
           {cvStats.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
+              <div className="text-4xl mb-2">📄</div>
               <p>No CV downloads yet</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
+                  <tr className="border-b border-gray-100">
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Student</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Downloads</th>
@@ -310,12 +309,12 @@ export default function AdminDashboard() {
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-50">
                   {cvStats.map((cv, i) => (
                     <tr key={i} className="hover:bg-gray-50 transition-all">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-[#1e3a8a] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-800 to-orange-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
                             {cv.userId?.name?.charAt(0).toUpperCase() || cv.name?.charAt(0).toUpperCase()}
                           </div>
                           <p className="font-semibold text-gray-800 text-sm">
@@ -325,8 +324,8 @@ export default function AdminDashboard() {
                       </td>
                       <td className="py-3 px-4 text-gray-500 text-sm">{cv.userId?.email || '—'}</td>
                       <td className="py-3 px-4 text-center">
-                        <span className="inline-flex px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full text-sm font-bold">
-                          {cv.downloadCount}
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-bold">
+                          ⬇️ {cv.downloadCount}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-gray-500 text-sm">
