@@ -10,7 +10,14 @@ export default function ManageVacancies() {
     // Edit State
     const [editingVacancy, setEditingVacancy] = useState(null);
     const [editForm, setEditForm] = useState({
-        title: '', company: '', description: '', location: '', deadline: ''
+        title: '',
+        company: '',
+        description: '',
+        location: '',
+        deadline: '',
+        skills: [],
+        salary: '',
+        jobType: 'Internship'
     });
     const [editLoading, setEditLoading] = useState(false);
 
@@ -40,7 +47,7 @@ export default function ManageVacancies() {
             setDeletingId(id);
             await deleteVacancy(id);
             setSuccess('Vacancy deleted successfully');
-            setVacancies(vacancies.filter(v => v._id !== id));
+            setVacancies(vacancies.filter((v) => v._id !== id));
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
             setError('Failed to delete vacancy');
@@ -56,7 +63,12 @@ export default function ManageVacancies() {
             company: vacancy.company,
             description: vacancy.description || '',
             location: vacancy.location || '',
-            deadline: vacancy.deadline ? new Date(vacancy.deadline).toISOString().split('T')[0] : ''
+            deadline: vacancy.deadline
+                ? new Date(vacancy.deadline).toISOString().split('T')[0]
+                : '',
+            skills: vacancy.skills || [],
+            salary: vacancy.salary || '',
+            jobType: vacancy.jobType || 'Internship'
         });
     };
 
@@ -66,7 +78,11 @@ export default function ManageVacancies() {
             setEditLoading(true);
             const res = await updateVacancy(editingVacancy._id, editForm);
             setSuccess('Vacancy updated successfully');
-            setVacancies(vacancies.map(v => v._id === editingVacancy._id ? res.data : v));
+            setVacancies(
+                vacancies.map((v) =>
+                    v._id === editingVacancy._id ? res.data : v
+                )
+            );
             setEditingVacancy(null);
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
@@ -88,8 +104,12 @@ export default function ManageVacancies() {
         <div className="p-8 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800 tracking-tight">💼 Manage Vacancies</h1>
-                    <p className="text-gray-500 mt-1">Review, update or remove existing internship postings.</p>
+                    <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+                        💼 Manage Vacancies
+                    </h1>
+                    <p className="text-gray-500 mt-1">
+                        Review, update or remove existing internship postings.
+                    </p>
                 </div>
             </div>
 
@@ -114,49 +134,87 @@ export default function ManageVacancies() {
                             <th className="px-6 py-4">Vacancy Details</th>
                             <th className="px-6 py-4">Location</th>
                             <th className="px-6 py-4">Deadline</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
+                            <th className="px-6 py-4">Uploaded Date</th>
+                            <th className="px-6 py-4 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {vacancies.length === 0 ? (
                             <tr>
-                                <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
+                                <td
+                                    colSpan="5"
+                                    className="px-6 py-12 text-center text-gray-400"
+                                >
                                     No vacancies found.
                                 </td>
                             </tr>
                         ) : (
                             vacancies.map((v) => (
-                                <tr key={v._id} className="hover:bg-gray-50/50 transition-colors group">
+                                <tr
+                                    key={v._id}
+                                    className="hover:bg-gray-50/50 transition-colors"
+                                >
                                     <td className="px-6 py-4">
-                                        <div className="font-bold text-gray-900 line-clamp-1">{v.title}</div>
-                                        <div className="text-sm text-gray-500">{v.company}</div>
+                                        <div className="font-bold text-gray-900 line-clamp-1">
+                                            {v.title}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            {v.company}
+                                        </div>
                                     </td>
+
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         <span className="flex items-center gap-1.5">
-                                            <span className="text-gray-400">📍</span> {v.location || 'Remote'}
+                                            <span className="text-gray-400">📍</span>
+                                            {v.location || 'Remote'}
                                         </span>
                                     </td>
+
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         <span className="flex items-center gap-1.5">
-                                            <span className="text-gray-400">⏳</span> {v.deadline ? new Date(v.deadline).toLocaleDateString() : 'N/A'}
+                                            <span className="text-gray-400">⏳</span>
+                                            {v.deadline
+                                                ? new Date(v.deadline).toLocaleDateString()
+                                                : 'N/A'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="text-gray-400">📅</span>
+                                            {v.createdAt
+                                                ? new Date(v.createdAt).toLocaleDateString()
+                                                : 'N/A'}
+                                        </span>
+                                    </td>
+
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center justify-center gap-2">
                                             <button
                                                 onClick={() => openEditModal(v)}
-                                                className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 text-sm font-semibold hover:bg-blue-100 transition-all"
                                                 title="Edit Vacancy"
                                             >
-                                                ✏️
+                                                <span>✏️</span>
+                                                <span>Edit</span>
                                             </button>
+
                                             <button
                                                 onClick={() => handleDelete(v._id)}
                                                 disabled={deletingId === v._id}
-                                                className={`p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors ${deletingId === v._id ? 'opacity-50' : ''}`}
+                                                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-300 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-all ${
+                                                    deletingId === v._id
+                                                        ? 'opacity-60 cursor-not-allowed'
+                                                        : ''
+                                                }`}
                                                 title="Delete Vacancy"
                                             >
-                                                {deletingId === v._id ? '...' : '🗑️'}
+                                                <span>🗑️</span>
+                                                <span>
+                                                    {deletingId === v._id
+                                                        ? 'Deleting...'
+                                                        : 'Delete'}
+                                                </span>
                                             </button>
                                         </div>
                                     </td>
@@ -167,65 +225,175 @@ export default function ManageVacancies() {
                 </table>
             </div>
 
-            {/* Edit Modal */}
             {editingVacancy && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-zoom-in">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-gray-800">Edit Vacancy</h2>
-                            <button onClick={() => setEditingVacancy(null)} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                            <h2 className="text-xl font-bold text-gray-800">
+                                Edit Vacancy
+                            </h2>
+                            <button
+                                onClick={() => setEditingVacancy(null)}
+                                className="text-gray-400 hover:text-gray-600 text-2xl"
+                            >
+                                &times;
+                            </button>
                         </div>
+
                         <form onSubmit={handleUpdate} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Job Title</label>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Job Title
+                                    </label>
                                     <input
                                         type="text"
                                         required
                                         value={editForm.title}
-                                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                title: e.target.value
+                                            })
+                                        }
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
                                     />
                                 </div>
+
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Company</label>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Company
+                                    </label>
                                     <input
                                         type="text"
                                         required
                                         value={editForm.company}
-                                        onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                company: e.target.value
+                                            })
+                                        }
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
                                     />
                                 </div>
+
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Location</label>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Location
+                                    </label>
                                     <input
                                         type="text"
                                         value={editForm.location}
-                                        onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                location: e.target.value
+                                            })
+                                        }
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
                                     />
                                 </div>
+
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Deadline</label>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Deadline
+                                    </label>
                                     <input
                                         type="date"
                                         min={new Date().toISOString().split('T')[0]}
                                         value={editForm.deadline}
-                                        onChange={(e) => setEditForm({ ...editForm, deadline: e.target.value })}
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                deadline: e.target.value
+                                            })
+                                        }
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
                                     />
                                 </div>
+
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Description</label>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Description
+                                    </label>
                                     <textarea
                                         rows="4"
                                         value={editForm.description}
-                                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                description: e.target.value
+                                            })
+                                        }
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all resize-none"
                                     ></textarea>
                                 </div>
+
+                                <div className="col-span-2">
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Required Skills (comma-separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., JavaScript, React, Node.js"
+                                        value={
+                                            Array.isArray(editForm.skills)
+                                                ? editForm.skills.join(', ')
+                                                : ''
+                                        }
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                skills: e.target.value
+                                                    .split(',')
+                                                    .map((s) => s.trim())
+                                                    .filter((s) => s)
+                                            })
+                                        }
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Salary
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., $50,000 - $70,000"
+                                        value={editForm.salary}
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                salary: e.target.value
+                                            })
+                                        }
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        Job Type
+                                    </label>
+                                    <select
+                                        value={editForm.jobType}
+                                        onChange={(e) =>
+                                            setEditForm({
+                                                ...editForm,
+                                                jobType: e.target.value
+                                            })
+                                        }
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                                    >
+                                        <option value="Internship">Internship</option>
+                                        <option value="Full-time">Full-time</option>
+                                        <option value="Part-time">Part-time</option>
+                                    </select>
+                                </div>
                             </div>
+
                             <div className="pt-4 flex gap-3">
                                 <button
                                     type="button"
