@@ -6,11 +6,15 @@ const VacancySchema = new mongoose.Schema(
     company: { type: String, required: true },
     description: { type: String },
     location: { type: String },
-    deadline: { type: Date },
+    deadline: { type: Date, required: true },
     postedBy: { type: String },
     imageUrl: { type: String, default: '' },
     salary: { type: String, default: '' },
-    jobType: { type: String, enum: ['Internship', 'Full-time', 'Part-time'], default: 'Internship' },
+    jobType: {
+      type: String,
+      enum: ['Internship', 'Full-time', 'Part-time'],
+      default: 'Internship'
+    },
     skills: { type: [String], default: [] }
   },
   { timestamps: true }

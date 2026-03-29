@@ -1,32 +1,55 @@
 const Vacancy = require('../models/vacancy');
 const Application = require('../models/Application');
 
+const convertToEndOfDay = (dateString) => {
+    const date = new Date(dateString);
+    date.setHours(23, 59, 59, 999);
+    return date;
+};
+
 // Create a new vacancy
 const createVacancy = async (req, res) => {
     try {
-       const { title, company, description, location, deadline, imageUrl, salary, jobType, skills } = req.body;
-     const postedBy = req.user.id;
+        const {
+            title,
+            company,
+            description,
+            location,
+            deadline,
+            imageUrl,
+            salary,
+            jobType,
+            skills
+        } = req.body;
 
-    if (!title || !company) {
-    return res.status(400).json({ message: "Title and company are required." });
-    }
+        const postedBy = req.user.id;
 
-    if (deadline && new Date(deadline) < new Date().setHours(0, 0, 0, 0)) {
-    return res.status(400).json({ message: "Deadline cannot be in the past." });
-    }
+        if (!title || !company) {
+            return res.status(400).json({ message: "Title and company are required." });
+        }
 
-    const newVacancy = new Vacancy({
-      title,
-      company,
-      description,
-      location,
-      deadline,
-      postedBy,
-      imageUrl: imageUrl || '',
-      salary: salary || '',
-      jobType: jobType || 'Internship',
-      skills: skills || []
-    });
+        if (!deadline) {
+            return res.status(400).json({ message: "Deadline is required." });
+        }
+
+        const formattedDeadline = convertToEndOfDay(deadline);
+
+        if (formattedDeadline < new Date()) {
+            return res.status(400).json({ message: "Deadline cannot be in the past." });
+        }
+
+        const newVacancy = new Vacancy({
+            title,
+            company,
+            description,
+            location,
+            deadline: formattedDeadline,
+            postedBy,
+            imageUrl: imageUrl || '',
+            salary: salary || '',
+            jobType: jobType || 'Internship',
+            skills: skills || []
+        });
 
         const savedVacancy = await newVacancy.save();
         res.status(201).json(savedVacancy);
@@ -35,7 +58,22 @@ const createVacancy = async (req, res) => {
     }
 };
 
-// Get all vacancies
+// Get only visible vacancies for users
+const getVisibleVacancies = async (req, res) => {
+    try {
+        const now = new Date();
+
+        const vacancies = await Vacancy.find({
+            deadline: { $gte: now }
+        }).sort({ createdAt: -1 });
+
+        res.status(200).json(vacancies);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch vacancies", error: error.message });
+    }
+};
+
+// Get all vacancies for admin
 const getAllVacancies = async (req, res) => {
     try {
         const vacancies = await Vacancy.find().sort({ createdAt: -1 });
@@ -49,9 +87,11 @@ const getAllVacancies = async (req, res) => {
 const getVacancyById = async (req, res) => {
     try {
         const vacancy = await Vacancy.findById(req.params.id);
+
         if (!vacancy) {
             return res.status(404).json({ message: "Vacancy not found" });
         }
+
         res.status(200).json(vacancy);
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch vacancy", error: error.message });
@@ -61,15 +101,28 @@ const getVacancyById = async (req, res) => {
 // Update a vacancy
 const updateVacancy = async (req, res) => {
     try {
+        const updateData = { ...req.body };
+
+        if (updateData.deadline) {
+            const formattedDeadline = convertToEndOfDay(updateData.deadline);
+
+            if (formattedDeadline < new Date()) {
+                return res.status(400).json({ message: "Deadline cannot be in the past." });
+            }
+
+            updateData.deadline = formattedDeadline;
+        }
+
         const updatedVacancy = await Vacancy.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             { new: true, runValidators: true }
         );
 
         if (!updatedVacancy) {
             return res.status(404).json({ message: "Vacancy not found" });
         }
+
         res.status(200).json(updatedVacancy);
     } catch (error) {
         res.status(500).json({ message: "Failed to update vacancy", error: error.message });
@@ -80,9 +133,11 @@ const updateVacancy = async (req, res) => {
 const deleteVacancy = async (req, res) => {
     try {
         const deletedVacancy = await Vacancy.findByIdAndDelete(req.params.id);
+
         if (!deletedVacancy) {
             return res.status(404).json({ message: "Vacancy not found" });
         }
+
         res.status(200).json({ message: "Vacancy deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Failed to delete vacancy", error: error.message });
@@ -100,6 +155,11 @@ const applyVacancy = async (req, res) => {
         const vacancy = await Vacancy.findById(vacancyId);
         if (!vacancy) {
             return res.status(404).json({ message: "Vacancy not found" });
+        }
+
+        // Prevent applying for expired vacancy
+        if (new Date(vacancy.deadline) < new Date()) {
+            return res.status(400).json({ message: "This vacancy has expired." });
         }
 
         // Check if already applied
@@ -127,6 +187,7 @@ const applyVacancy = async (req, res) => {
 
 module.exports = {
     createVacancy,
+    getVisibleVacancies,
     getAllVacancies,
     getVacancyById,
     updateVacancy,

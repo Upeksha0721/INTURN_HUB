@@ -11,28 +11,64 @@ export default function Vacancies() {
   const [filter, setFilter] = useState('All');
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedVacancy, setSelectedVacancy] = useState(null);
+  const [error, setError] = useState('');
+
   const token = localStorage.getItem('token');
+
+  const isExpired = (deadline) => {
+    if (!deadline) return false;
+    return new Date(deadline) < new Date();
+  };
 
   useEffect(() => {
     const fetchVacancies = async () => {
       try {
-        const res = await fetch(VACANCY_API, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        setLoading(true);
+        setError('');
+
+        const res = await fetch(VACANCY_API);
         const data = await res.json();
-        setVacancies(data);
+
+        if (!Array.isArray(data)) {
+          setVacancies([]);
+          setError('Invalid vacancy data received.');
+          return;
+        }
+
+        const visibleVacancies = data.filter((v) => !isExpired(v.deadline));
+        setVacancies(visibleVacancies);
       } catch (err) {
-        console.error('Failed to fetch vacancies');
+        console.error('Failed to fetch vacancies', err);
+        setVacancies([]);
+        setError('Failed to fetch vacancies.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchVacancies();
-  }, [token]);
+  }, []);
 
   const handleApply = async (id) => {
+    if (!token) {
+      alert('❌ Please log in first to apply for a vacancy.');
+      return;
+    }
+
+    const selected = vacancies.find((v) => v._id === id);
+
+    if (!selected) {
+      alert('❌ Vacancy not found.');
+      return;
+    }
+
+    if (isExpired(selected.deadline)) {
+      alert('❌ This vacancy has expired.');
+      return;
+    }
+
     setApplying(id);
+
     try {
       const res = await fetch(`${VACANCY_API}/${id}/apply`, {
         method: 'POST',
@@ -46,7 +82,8 @@ export default function Vacancies() {
       } else {
         alert(`❌ ${data.message || 'Failed to apply'}`);
       }
-    } catch {
+    } catch (err) {
+      console.error('Apply failed', err);
       alert('❌ Failed to apply');
     } finally {
       setApplying(null);
@@ -85,7 +122,6 @@ export default function Vacancies() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      {/* Image Modal */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
@@ -110,7 +146,6 @@ export default function Vacancies() {
         </div>
       )}
 
-      {/* Description Modal */}
       {selectedVacancy && (
         <div
           className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
@@ -163,9 +198,9 @@ export default function Vacancies() {
                     Required Skills
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {selectedVacancy.skills.map((skill) => (
+                    {selectedVacancy.skills.map((skill, index) => (
                       <span
-                        key={skill}
+                        key={`${skill}-${index}`}
                         className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs border border-gray-200"
                       >
                         {skill}
@@ -177,7 +212,7 @@ export default function Vacancies() {
 
               <button
                 onClick={() => handleApply(selectedVacancy._id)}
-                disabled={applying === selectedVacancy._id}
+                disabled={applying === selectedVacancy._id || isExpired(selectedVacancy.deadline)}
                 className="w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 shadow-lg"
               >
                 {applying === selectedVacancy._id ? (
@@ -185,6 +220,8 @@ export default function Vacancies() {
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     Applying...
                   </span>
+                ) : isExpired(selectedVacancy.deadline) ? (
+                  'Expired'
                 ) : (
                   '🚀 Apply Now'
                 )}
@@ -194,13 +231,17 @@ export default function Vacancies() {
         </div>
       )}
 
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">💼 Internship Vacancies</h1>
         <p className="text-gray-500 mt-1">Discover and apply for your next great opportunity.</p>
       </div>
 
-      {/* Top Bar */}
+      {error && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+          <p className="text-red-700 font-medium">{error}</p>
+        </div>
+      )}
+
       <div className="space-y-6 mb-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
@@ -268,7 +309,6 @@ export default function Vacancies() {
         </div>
       </div>
 
-      {/* Bottom Content */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
@@ -373,9 +413,9 @@ export default function Vacancies() {
                           Required Skills
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {vacancy.skills.slice(0, 4).map((skill) => (
+                          {vacancy.skills.slice(0, 4).map((skill, index) => (
                             <span
-                              key={skill}
+                              key={`${skill}-${index}`}
                               className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs border border-gray-200"
                             >
                               {skill}
@@ -394,7 +434,7 @@ export default function Vacancies() {
                   <div className="mt-auto">
                     <button
                       onClick={() => handleApply(vacancy._id)}
-                      disabled={applying === vacancy._id}
+                      disabled={applying === vacancy._id || isExpired(vacancy.deadline)}
                       className="w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 shadow-lg"
                     >
                       {applying === vacancy._id ? (
@@ -402,6 +442,8 @@ export default function Vacancies() {
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                           Applying...
                         </span>
+                      ) : isExpired(vacancy.deadline) ? (
+                        'Expired'
                       ) : (
                         '🚀 Apply Now'
                       )}

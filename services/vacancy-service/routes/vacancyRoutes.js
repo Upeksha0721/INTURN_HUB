@@ -3,12 +3,25 @@ const router = express.Router();
 const vacancyController = require('../controllers/vacancyController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
-// Vacancy routes
+// Admin create vacancy
 router.post('/', protect, adminOnly, vacancyController.createVacancy);
-router.get('/', vacancyController.getAllVacancies);
+
+// User-visible vacancies only
+router.get('/', vacancyController.getVisibleVacancies);
+
+// Admin can see all vacancies
+router.get('/admin/all', protect, adminOnly, vacancyController.getAllVacancies);
+
+// Single vacancy
 router.get('/:id', vacancyController.getVacancyById);
+
+// Admin update vacancy
 router.put('/:id', protect, adminOnly, vacancyController.updateVacancy);
+
+// Admin delete vacancy
 router.delete('/:id', protect, adminOnly, vacancyController.deleteVacancy);
+
+// User apply
 router.post('/:id/apply', protect, vacancyController.applyVacancy);
 
 module.exports = router;
