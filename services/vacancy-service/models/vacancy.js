@@ -15,7 +15,9 @@ const VacancySchema = new mongoose.Schema(
       enum: ['Internship', 'Full-time', 'Part-time'],
       default: 'Internship'
     },
-    skills: { type: [String], default: [] }
+    skills: { type: [String], default: [] },
+    applicationUrl: { type: String, default: '' },
+    viewCount: { type: Number, default: 0 }
   },
   { timestamps: true }
 );

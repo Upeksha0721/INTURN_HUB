@@ -91,6 +91,17 @@ const normalizeSalaryForSubmit = (value) => {
   return cleanValue;
 };
 
+const isValidUrl = (value) => {
+  if (!value) return false;
+
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export default function ManageVacancies() {
   const [vacancies, setVacancies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -106,7 +117,8 @@ export default function ManageVacancies() {
     deadline: '',
     skills: [],
     salary: '',
-    jobType: 'Internship'
+    jobType: 'Internship',
+    applicationUrl: ''
   });
   const [editLoading, setEditLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -117,11 +129,25 @@ export default function ManageVacancies() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVacancyId, setSelectedVacancyId] = useState(null);
 
+  const [pageSize, setPageSize] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchVacancies();
   }, [token]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(vacancies.length / pageSize));
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [vacancies, currentPage, pageSize]);
 
   const isExpired = (deadline) => {
     if (!deadline) return false;
@@ -159,9 +185,19 @@ export default function ManageVacancies() {
       errors.description = 'Description must be at least 10 characters';
     }
 
+    if (!Array.isArray(form.skills) || form.skills.length === 0) {
+      errors.skills = 'At least one skill is required';
+    }
+
     const salaryError = validateSalary(form.salary);
     if (salaryError) {
       errors.salary = salaryError;
+    }
+
+    if (!form.applicationUrl.trim()) {
+      errors.applicationUrl = 'Application URL is required';
+    } else if (!isValidUrl(form.applicationUrl.trim())) {
+      errors.applicationUrl = 'Please enter a valid URL';
     }
 
     return errors;
@@ -241,7 +277,8 @@ export default function ManageVacancies() {
       deadline: formatDateForInput(vacancy.deadline),
       skills: vacancy.skills || [],
       salary: getEditableSalaryValue(vacancy.salary),
-      jobType: vacancy.jobType || 'Internship'
+      jobType: vacancy.jobType || 'Internship',
+      applicationUrl: vacancy.applicationUrl || ''
     });
   };
 
@@ -273,9 +310,17 @@ export default function ManageVacancies() {
       .map((s) => s.trim())
       .filter((s) => s);
 
-    setEditForm((prev) => ({
-      ...prev,
+    const updatedForm = {
+      ...editForm,
       skills: skillsArray
+    };
+
+    setEditForm(updatedForm);
+
+    const errors = validateForm(updatedForm);
+    setFieldErrors((prev) => ({
+      ...prev,
+      skills: errors.skills || ''
     }));
   };
 
@@ -370,7 +415,8 @@ export default function ManageVacancies() {
         description: editForm.description.trim(),
         location: editForm.location.trim(),
         salary: editForm.salary ? normalizeSalaryForSubmit(editForm.salary) : '',
-        skills: Array.isArray(editForm.skills) ? editForm.skills : []
+        skills: Array.isArray(editForm.skills) ? editForm.skills : [],
+        applicationUrl: editForm.applicationUrl.trim()
       };
 
       const res = await updateVacancy(editingVacancy._id, payload);
@@ -394,6 +440,12 @@ export default function ManageVacancies() {
   const totalCount = vacancies.length;
   const activeCount = vacancies.filter((v) => !isExpired(v.deadline)).length;
   const expiredCount = vacancies.filter((v) => isExpired(v.deadline)).length;
+
+  const totalPages = Math.max(1, Math.ceil(vacancies.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedVacancies = vacancies.slice(startIndex, startIndex + pageSize);
+  const visibleFrom = vacancies.length === 0 ? 0 : startIndex + 1;
+  const visibleTo = Math.min(startIndex + pageSize, vacancies.length);
 
   if (loading) {
     return (
@@ -446,8 +498,31 @@ export default function ManageVacancies() {
       )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">Vacancy List</h2>
+            <p className="text-sm text-gray-500">
+              Showing {visibleFrom} to {visibleTo} of {vacancies.length} vacancies
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-600">Page size</label>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:ring-2 focus:ring-red-500 outline-none"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[900px]">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-400 text-xs font-semibold uppercase tracking-wider">
               <tr>
                 <th className="px-6 py-4">Vacancy Details</th>
@@ -467,7 +542,7 @@ export default function ManageVacancies() {
                   </td>
                 </tr>
               ) : (
-                vacancies.map((v) => {
+                paginatedVacancies.map((v) => {
                   const expired = isExpired(v.deadline);
 
                   return (
@@ -480,6 +555,16 @@ export default function ManageVacancies() {
                       <td className="px-6 py-4">
                         <div className="font-bold text-gray-900 line-clamp-1">{v.title}</div>
                         <div className="text-sm text-gray-500">{v.company}</div>
+                        {v.applicationUrl && (
+                          <a
+                            href={v.applicationUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:underline break-all"
+                          >
+                            {v.applicationUrl}
+                          </a>
+                        )}
                       </td>
 
                       <td className="px-6 py-4 text-sm text-gray-600">
@@ -546,12 +631,40 @@ export default function ManageVacancies() {
             </tbody>
           </table>
         </div>
+
+        {vacancies.length > 0 && (
+          <div className="px-6 py-4 border-t border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <p className="text-sm text-gray-500">
+              Page {currentPage} of {totalPages}
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {editingVacancy && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
               <h2 className="text-xl font-bold text-gray-800">Edit Vacancy</h2>
               <button
                 onClick={closeEditModal}
@@ -562,8 +675,8 @@ export default function ManageVacancies() {
             </div>
 
             <form onSubmit={handleUpdate} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                     Job Title
                   </label>
@@ -582,7 +695,7 @@ export default function ManageVacancies() {
                   )}
                 </div>
 
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                     Company
                   </label>
@@ -633,7 +746,7 @@ export default function ManageVacancies() {
                   )}
                 </div>
 
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                     Description
                   </label>
@@ -652,7 +765,7 @@ export default function ManageVacancies() {
                   )}
                 </div>
 
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                     Required Skills (comma-separated)
                   </label>
@@ -661,8 +774,35 @@ export default function ManageVacancies() {
                     placeholder="e.g., JavaScript, React, Node.js"
                     value={Array.isArray(editForm.skills) ? editForm.skills.join(', ') : ''}
                     onChange={(e) => handleSkillsChange(e.target.value)}
-                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                    className={`w-full px-4 py-2 bg-gray-50 border rounded-lg outline-none transition-all ${
+                      fieldErrors.skills
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-500'
+                        : 'border-gray-200 focus:ring-2 focus:ring-red-500'
+                    }`}
                   />
+                  {fieldErrors.skills && (
+                    <p className="text-sm text-red-500 mt-1">{fieldErrors.skills}</p>
+                  )}
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                    Application URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://company.com/apply"
+                    value={editForm.applicationUrl}
+                    onChange={(e) => handleFieldChange('applicationUrl', e.target.value)}
+                    className={`w-full px-4 py-2 bg-gray-50 border rounded-lg outline-none transition-all ${
+                      fieldErrors.applicationUrl
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-500'
+                        : 'border-gray-200 focus:ring-2 focus:ring-red-500'
+                    }`}
+                  />
+                  {fieldErrors.applicationUrl && (
+                    <p className="text-sm text-red-500 mt-1">{fieldErrors.applicationUrl}</p>
+                  )}
                 </div>
 
                 <div>

@@ -12,6 +12,9 @@ router.get('/', vacancyController.getVisibleVacancies);
 // Admin can see all vacancies
 router.get('/admin/all', protect, adminOnly, vacancyController.getAllVacancies);
 
+// Increment vacancy view count
+router.patch('/:id/view', vacancyController.incrementVacancyView);
+
 // Single vacancy
 router.get('/:id', vacancyController.getVacancyById);
 

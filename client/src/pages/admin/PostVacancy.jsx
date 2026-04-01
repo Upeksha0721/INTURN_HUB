@@ -11,7 +11,8 @@ const INITIAL_FORM = {
   imageUrl: '',
   salary: '',
   jobType: 'Internship',
-  skills: ''
+  skills: '',
+  applicationUrl: ''
 };
 
 const stripCommas = (value) => value.replace(/,/g, '');
@@ -76,7 +77,7 @@ const validateLocation = (value) => {
     return 'Location must contain letters or numbers';
   }
 
-  if (/[^a-zA-Z0-9\s,\-\.]/.test(value)) {
+  if (/[^a-zA-Z0-9\s,\-.]/.test(value)) {
     return 'Location cannot contain special symbols';
   }
 
@@ -107,6 +108,35 @@ const validateDeadline = (value) => {
 
   if (deadlineDate < today) {
     return 'Deadline cannot be in the past';
+  }
+
+  return '';
+};
+
+const validateSkills = (value) => {
+  if (!value.trim()) return 'At least one skill is required';
+
+  if (!/[a-zA-Z]/.test(value)) {
+    return 'Skills must contain letters';
+  }
+
+  if (/\d/.test(value)) {
+    return 'Skills cannot contain numbers';
+  }
+
+  return '';
+};
+
+const validateApplicationUrl = (value) => {
+  if (!value.trim()) return 'Application URL is required';
+
+  try {
+    const parsedUrl = new URL(value);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return 'Please enter a valid URL';
+    }
+  } catch {
+    return 'Please enter a valid URL';
   }
 
   return '';
@@ -171,7 +201,8 @@ const getDemoVacancy = () => {
     imageUrl: '',
     salary: '45000.00',
     jobType: 'Internship',
-    skills: 'React, JavaScript, HTML, CSS'
+    skills: 'React, JavaScript, HTML, CSS',
+    applicationUrl: 'https://example.com/apply/frontend-developer-intern'
   };
 };
 
@@ -188,6 +219,8 @@ export default function PostVacancy() {
   const [companyError, setCompanyError] = useState('');
   const [locationError, setLocationError] = useState('');
   const [deadlineError, setDeadlineError] = useState('');
+  const [skillsError, setSkillsError] = useState('');
+  const [applicationUrlError, setApplicationUrlError] = useState('');
 
   const token = localStorage.getItem('token');
 
@@ -215,6 +248,8 @@ export default function PostVacancy() {
     setCompanyError('');
     setLocationError('');
     setDeadlineError('');
+    setSkillsError('');
+    setApplicationUrlError('');
     setError('');
     setSuccess('');
   };
@@ -346,6 +381,18 @@ export default function PostVacancy() {
     setDeadlineError(validateDeadline(value));
   };
 
+  const handleSkillsChange = (e) => {
+    const value = e.target.value;
+    setForm({ ...form, skills: value });
+    setSkillsError(validateSkills(value));
+  };
+
+  const handleApplicationUrlChange = (e) => {
+    const value = e.target.value;
+    setForm({ ...form, applicationUrl: value });
+    setApplicationUrlError(validateApplicationUrl(value));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -354,12 +401,16 @@ export default function PostVacancy() {
     const locationErrorValue = validateLocation(form.location);
     const salaryErrorValue = validateSalary(form.salary);
     const deadlineErrorValue = validateDeadline(form.deadline);
+    const skillsErrorValue = validateSkills(form.skills);
+    const applicationUrlErrorValue = validateApplicationUrl(form.applicationUrl);
 
     setTitleError(titleErrorValue);
     setCompanyError(companyErrorValue);
     setLocationError(locationErrorValue);
     setSalaryError(salaryErrorValue);
     setDeadlineError(deadlineErrorValue);
+    setSkillsError(skillsErrorValue);
+    setApplicationUrlError(applicationUrlErrorValue);
     setSalaryTouched(true);
 
     if (
@@ -367,7 +418,9 @@ export default function PostVacancy() {
       companyErrorValue ||
       locationErrorValue ||
       salaryErrorValue ||
-      deadlineErrorValue
+      deadlineErrorValue ||
+      skillsErrorValue ||
+      applicationUrlErrorValue
     ) {
       setError('Please correct the validation errors before submitting.');
       return;
@@ -381,7 +434,11 @@ export default function PostVacancy() {
       const payload = {
         ...form,
         salary: form.salary ? normalizeSalaryForSubmit(form.salary) : '',
-        skills: form.skills.split(',').map((s) => s.trim()).filter((s) => s)
+        skills: form.skills
+          .split(',')
+          .map((s) => s.trim())
+          .filter((s) => s),
+        applicationUrl: form.applicationUrl.trim()
       };
 
       const res = await fetch(VACANCY_API, {
@@ -602,9 +659,36 @@ export default function PostVacancy() {
                 type="text"
                 placeholder="e.g. React, Node.js, MongoDB"
                 value={form.skills}
-                onChange={(e) => setForm({ ...form, skills: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                onChange={handleSkillsChange}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  skillsError
+                    ? 'border-red-400 focus:ring-red-500'
+                    : 'border-gray-200 focus:ring-blue-500'
+                }`}
+                required
               />
+              {skillsError && (
+                <p className="text-sm text-red-500 mt-1">{skillsError}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Application URL</label>
+              <input
+                type="text"
+                placeholder="e.g. https://company.com/apply"
+                value={form.applicationUrl}
+                onChange={handleApplicationUrlChange}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  applicationUrlError
+                    ? 'border-red-400 focus:ring-red-500'
+                    : 'border-gray-200 focus:ring-blue-500'
+                }`}
+                required
+              />
+              {applicationUrlError && (
+                <p className="text-sm text-red-500 mt-1">{applicationUrlError}</p>
+              )}
             </div>
 
             <div>
