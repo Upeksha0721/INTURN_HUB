@@ -46,16 +46,16 @@ export default function AdminDashboard() {
 
         setChartData({
           pie: [
-            { name: 'Students', value: students.length, color: '#1d4ed8' },
-            { name: 'Vacancies', value: vacancies.length, color: '#ea580c' },
-            { name: 'Materials', value: materials.length, color: '#7c3aed' },
-            { name: 'Messages', value: messages.length, color: '#059669' },
+            { name: 'Students', value: students.length, color: '#1e3a8a' },
+            { name: 'Vacancies', value: vacancies.length, color: '#ca8a04' },
+            { name: 'Materials', value: materials.length, color: '#1e40af' },
+            { name: 'Messages', value: messages.length, color: '#854d0e' },
           ],
           bar: [
-            { name: 'Students', count: students.length, fill: '#1d4ed8' },
-            { name: 'Vacancies', count: vacancies.length, fill: '#ea580c' },
-            { name: 'Materials', count: materials.length, fill: '#7c3aed' },
-            { name: 'Messages', count: messages.length, fill: '#059669' },
+            { name: 'Students', count: students.length, fill: '#1e3a8a' },
+            { name: 'Vacancies', count: vacancies.length, fill: '#ca8a04' },
+            { name: 'Materials', count: materials.length, fill: '#1e40af' },
+            { name: 'Messages', count: messages.length, fill: '#854d0e' },
           ]
         });
 
@@ -80,16 +80,19 @@ export default function AdminDashboard() {
         } catch (e) { setCvStats([]); }
 
         const userActivities = students.slice(0, 2).map(u => ({
-          id: u._id, icon: '👤', text: `${u.name} registered as student`,
-          time: new Date(u.createdAt), color: 'bg-blue-100 text-blue-600'
+          id: u._id,
+          text: `${u.name} registered as student`,
+          time: new Date(u.createdAt),
         }));
         const materialActivities = materials.slice(0, 2).map(m => ({
-          id: m._id, icon: '📚', text: `Study material "${m.title}" uploaded`,
-          time: new Date(m.createdAt), color: 'bg-indigo-100 text-indigo-600'
+          id: m._id,
+          text: `Study material "${m.title}" uploaded`,
+          time: new Date(m.createdAt),
         }));
         const vacancyActivities = vacancies.slice(0, 2).map(v => ({
-          id: v._id, icon: '💼', text: `Vacancy "${v.title}" posted at ${v.company}`,
-          time: new Date(v.createdAt), color: 'bg-orange-100 text-orange-600'
+          id: v._id,
+          text: `Vacancy "${v.title}" posted at ${v.company}`,
+          time: new Date(v.createdAt),
         }));
 
         const allActivities = [...userActivities, ...materialActivities, ...vacancyActivities]
@@ -108,10 +111,10 @@ export default function AdminDashboard() {
   if (loading) return <Spinner message="Loading dashboard..." />;
 
   const statCards = [
-    { label: 'Total Students', value: stats.students, icon: '👥', color: 'from-blue-800 to-blue-600', light: 'bg-blue-50 text-blue-700', path: '/admin/users' },
-    { label: 'Active Vacancies', value: stats.vacancies, icon: '💼', color: 'from-orange-600 to-orange-400', light: 'bg-orange-50 text-orange-700', path: '/admin/vacancies' },
-    { label: 'Study Materials', value: stats.materials, icon: '📚', color: 'from-blue-700 to-indigo-500', light: 'bg-indigo-50 text-indigo-700', path: '/admin/upload-material' },
-    { label: 'Unread Messages', value: stats.messages, icon: '📬', color: 'from-orange-500 to-red-500', light: 'bg-red-50 text-red-700', path: '/admin/messages' },
+    { label: 'Total Students', value: stats.students, path: '/admin/users' },
+    { label: 'Active Vacancies', value: stats.vacancies, path: '/admin/vacancies' },
+    { label: 'Study Materials', value: stats.materials, path: '/admin/upload-material' },
+    { label: 'Unread Messages', value: stats.messages, path: '/admin/messages' },
   ];
 
   const quickActions = [
@@ -119,7 +122,6 @@ export default function AdminDashboard() {
     { label: 'Manage Users', icon: '👥', color: 'bg-orange-500 hover:bg-orange-600', path: '/admin/users' },
     { label: 'Upload Material', icon: '📤', color: 'bg-blue-600 hover:bg-blue-700', path: '/admin/upload-material' },
     { label: 'View Messages', icon: '📬', color: 'bg-orange-600 hover:bg-orange-700', path: '/admin/messages' },
-    { label: 'Create Quiz', icon: '🧠', color: 'bg-green-500 hover:bg-green-600', path: '/admin/create-quiz' },
   ];
 
   return (
@@ -133,16 +135,16 @@ export default function AdminDashboard() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/92 via-blue-800/88 "></div>
         <div className="relative z-10 max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-orange-300 text-sm font-medium mb-1">⚙️ Admin Panel</p>
-            <h1 className="text-3xl font-bold text-white mb-1">Welcome, {user?.name}! 👋</h1>
-            <p className="text-blue-200">Here's your InternHub overview for today.</p>
+            <p className="text-yellow-500 text-sm font-medium mb-1">Admin Panel</p>
+            <h1 className="text-3xl font-bold text-white mb-1">Welcome, {user?.name}</h1>
+            <p className="text-blue-200">System overview and management</p>
           </div>
           <div className="hidden md:flex items-center gap-4">
             <div className="text-right">
               <p className="text-white font-semibold">{user?.name}</p>
-              <p className="text-orange-200 text-sm">Administrator</p>
+              <p className="text-yellow-500 text-sm">Administrator</p>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-14 h-14 rounded-lg bg-yellow-500 flex items-center justify-center text-white text-2xl font-bold">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
           </div>
@@ -162,7 +164,6 @@ export default function AdminDashboard() {
               </div>
               <div className="text-2xl font-bold text-gray-800">{card.value}</div>
               <div className="text-gray-500 text-sm mt-1">{card.label}</div>
-              <div className={`h-1 w-full bg-gradient-to-r ${card.color} rounded-full mt-3 opacity-40`}></div>
             </div>
           ))}
         </div>
@@ -232,8 +233,8 @@ export default function AdminDashboard() {
                 </button>
               ))}
             </div>
-            <div className="mt-5 pt-5 border-t border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">🟢 System Status</h3>
+            <div className="mt-5 pt-5 border-t border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">System Status</h3>
               <div className="space-y-2">
                 {[
                   { label: 'Auth Service', port: '5001' },
@@ -243,8 +244,8 @@ export default function AdminDashboard() {
                   <div key={service.label} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
                     <span className="text-gray-600 font-medium">{service.label}</span>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                      <span className="text-green-600 text-xs font-medium">:{service.port}</span>
+                      <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                      <span className="text-gray-500 text-xs">:{service.port}</span>
                     </div>
                   </div>
                 ))}
@@ -259,21 +260,19 @@ export default function AdminDashboard() {
             </div>
             {activities.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
-                <div className="text-4xl mb-2">📋</div>
                 <p>No recent activity</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {activities.map((activity, index) => (
-                  <div key={index} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
-                    <div className={`w-10 h-10 ${activity.color} rounded-xl flex items-center justify-center text-lg shrink-0`}>
-                      {activity.icon}
+                  <div key={index} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-all">
+                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                      <div className="w-1.5 h-1.5 bg-[#1e3a8a] rounded-full"></div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-700 text-sm font-medium truncate">{activity.text}</p>
                       <p className="text-gray-400 text-xs mt-0.5">{activity.time}</p>
                     </div>
-                    <div className="w-2 h-2 bg-orange-400 rounded-full shrink-0"></div>
                   </div>
                 ))}
               </div>
