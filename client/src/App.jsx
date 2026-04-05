@@ -108,7 +108,7 @@ function AppRoutes() {
        <ProtectedRoute><StudentLayout><Quizzes /></StudentLayout></ProtectedRoute>
       } />
 
-      <Route path="/admin/create-quiz" element={
+      <Route path="/admin/quizzes" element={
        <ProtectedRoute><AdminLayout><ManageQuizzes /></AdminLayout></ProtectedRoute>
       } />
     </Routes>
