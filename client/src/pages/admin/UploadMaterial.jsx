@@ -36,31 +36,31 @@ export default function UploadMaterial() {
     return colors[cat] || 'bg-gray-50 text-gray-700';
   };
 
-  const fetchMaterials = async () => {
-    try {
-      const res = await fetch(STUDY_API, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setAllMaterials(data);
-      setRecentMaterials(data.slice(0, 5));
-    } catch (err) {
-      console.error('Failed to fetch materials');
-    }
-  };
+  // const fetchMaterials = async () => {
+  //   try {
+  //     const res = await fetch(STUDY_API, {
+  //       headers: { Authorization: `Bearer ${token}` }
+  //     });
+  //     const data = await res.json();
+  //     setAllMaterials(data);
+  //     setRecentMaterials(data.slice(0, 5));
+  //   } catch (err) {
+  //     console.error('Failed to fetch materials');
+  //   }
+  // };
 
-  const fetchMaterials = async () => {
-    try {
-      const res = await fetch(STUDY_API, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setAllMaterials(data);
-      setRecentMaterials(data.slice(0, 5));
-    } catch (err) {
-      console.error('Failed to fetch materials');
-    }
-  };
+  // const fetchMaterials = async () => {
+  //   try {
+  //     const res = await fetch(STUDY_API, {
+  //       headers: { Authorization: `Bearer ${token}` }
+  //     });
+  //     const data = await res.json();
+  //     setAllMaterials(data);
+  //     setRecentMaterials(data.slice(0, 5));
+  //   } catch (err) {
+  //     console.error('Failed to fetch materials');
+  //   }
+  // };
 
   useEffect(() => {
     fetchMaterials();
