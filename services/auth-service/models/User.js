@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  itNumber: {
+    type: String,
+    trim: true
+  },
   photo: {
     type: String
   }

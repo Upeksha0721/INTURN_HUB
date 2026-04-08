@@ -245,6 +245,7 @@ export default function Register() {
             </div>
 
             {/* Password */}
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: '#93b4d4' }}>Password</label>
               <div className="relative">
