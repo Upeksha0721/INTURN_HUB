@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/Spinner';
+import NotificationBell from '../../components/NotificationBell';
 
 const STUDY_API = 'http://localhost:5003/api/study-materials';
 const AUTH_API = 'http://localhost:5001/api/auth';
@@ -45,10 +46,10 @@ export default function Dashboard() {
   if (loading) return <Spinner message="Loading dashboard..." />;
 
   const statCards = [
-    { icon: '💼', label: 'Available Vacancies', value: stats.vacancies, color: 'from-blue-800 to-blue-600', bg: 'bg-blue-50', text: 'text-blue-700', path: '/student/vacancies' },
-    { icon: '📋', label: 'My Applications', value: 0, color: 'from-orange-600 to-orange-400', bg: 'bg-orange-50', text: 'text-orange-700', path: '/student/applications' },
-    { icon: '📚', label: 'Study Materials', value: stats.materials, color: 'from-blue-700 to-indigo-500', bg: 'bg-indigo-50', text: 'text-indigo-700', path: '/student/study-materials' },
-    { icon: '🧠', label: 'Quizzes Taken', value: 0, color: 'from-orange-500 to-red-500', bg: 'bg-red-50', text: 'text-red-700', path: '/student/quizzes' },
+    { label: 'Available Vacancies', value: stats.vacancies, path: '/student/vacancies' },
+    { label: 'My Applications', value: 0, path: '/student/applications' },
+    { label: 'Study Materials', value: stats.materials, path: '/student/study-materials' },
+    { label: 'Quizzes Taken', value: 0, path: '/student/quizzes' },
   ];
 
   const quickActions = [
@@ -69,14 +70,15 @@ export default function Dashboard() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/85"></div>
         <div className="relative z-10 max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-blue-200 text-sm font-medium mb-1">Student Portal</p>
-            <h1 className="text-3xl font-bold text-white mb-1">Welcome back, {user?.name}! 👋</h1>
+            <p className="text-yellow-500 text-sm font-medium mb-1">Student Portal</p>
+            <h1 className="text-3xl font-bold text-white mb-1">Welcome back, {user?.name}</h1>
             <p className="text-blue-200">Ready to find your dream internship today?</p>
           </div>
           <div className="hidden md:flex items-center gap-4">
+            <NotificationBell />
             <div className="text-right">
               <p className="text-white font-semibold">{profile?.name}</p>
-              <p className="text-orange-200 text-sm">{profile?.email}</p>
+              <p className="text-yellow-500 text-sm">{profile?.email}</p>
             </div>
             {profile?.photo ? (
               <img src={profile.photo} alt="profile"
@@ -99,14 +101,17 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 -mt-6">
           {statCards.map(card => (
             <div key={card.label} onClick={() => navigate(card.path)}
-              className="bg-white rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100">
+              className="bg-white rounded-lg shadow-sm p-5 cursor-pointer hover:shadow-md transition-all border border-gray-200">
               <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center text-xl`}>{card.icon}</div>
-                <span className={`text-xs font-medium ${card.text} ${card.bg} px-2 py-1 rounded-full`}>View →</span>
+                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <div className="w-2 h-2 bg-[#1e3a8a] rounded-full"></div>
+                </div>
+                <span className="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
+                  View
+                </span>
               </div>
               <div className="text-2xl font-bold text-gray-800">{card.value}</div>
               <div className="text-gray-500 text-sm mt-1">{card.label}</div>
-              <div className={`h-1 w-full bg-gradient-to-r ${card.color} rounded-full mt-3 opacity-40`}></div>
             </div>
           ))}
         </div>
@@ -153,13 +158,12 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-5">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map(action => (
               <button key={action.label} onClick={() => navigate(action.path)}
-                className={`${action.color} text-white p-4 rounded-xl text-center transition-all hover:shadow-lg hover:-translate-y-0.5`}>
-                <div className="text-3xl mb-2">{action.icon}</div>
+                className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white p-4 rounded-lg text-center transition-all">
                 <div className="text-sm font-medium">{action.label}</div>
               </button>
             ))}
@@ -171,15 +175,15 @@ export default function Dashboard() {
           style={{background: 'linear-gradient(135deg, #1e3a8a 0%, #2d3f71 60%, #91692d 100%)'}}>
           <div className="grid grid-cols-3 gap-6 text-center">
             <div>
-              <div className="text-3xl font-bold">{stats.vacancies}</div>
+              <div className="text-3xl font-bold text-white">{stats.vacancies}</div>
               <div className="text-blue-200 text-sm mt-1">Available Vacancies</div>
             </div>
             <div className="border-x border-white/20">
-              <div className="text-3xl font-bold">{stats.materials}</div>
+              <div className="text-3xl font-bold text-white">{stats.materials}</div>
               <div className="text-blue-200 text-sm mt-1">Study Materials</div>
             </div>
             <div>
-              <div className="text-3xl font-bold">0</div>
+              <div className="text-3xl font-bold text-white">0</div>
               <div className="text-blue-200 text-sm mt-1">My Applications</div>
             </div>
           </div>

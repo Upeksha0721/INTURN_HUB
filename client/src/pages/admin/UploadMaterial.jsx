@@ -37,6 +37,32 @@ export default function UploadMaterial() {
     return colors[cat] || 'bg-gray-100 text-gray-700';
   };
 
+  // ── Add Notification to localStorage with REAL database ID ──
+  const addNotification = (material) => {
+    const notifications = JSON.parse(localStorage.getItem('studyMaterialNotifications') || '[]');
+    
+    const newNotification = {
+      id: Date.now(),
+      title: '📚 New Study Material Available!',
+      message: `"${material.title}" has been added to ${material.category} category. Click to view!`,
+      materialId: material._id,  // This is the REAL database ID
+      materialTitle: material.title,
+      category: material.category,
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+    
+    notifications.unshift(newNotification);
+    // Keep only last 20 notifications
+    if (notifications.length > 20) notifications.pop();
+    localStorage.setItem('studyMaterialNotifications', JSON.stringify(notifications));
+    
+    // Trigger event for real-time update
+    window.dispatchEvent(new CustomEvent('newMaterialAdded', { detail: newNotification }));
+    
+    console.log('✅ Notification saved with REAL ID:', material._id);
+  };
+
   // ── Description validator ──────────────────────────────────────────────────
   const validateDescription = (value) => {
     const trimmed = value.trim();
@@ -79,10 +105,16 @@ export default function UploadMaterial() {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      setAllMaterials(data);
-      setRecentMaterials(data.slice(0, 5));
+      // Sort by createdAt date (newest first)
+      const sortedData = [...data].sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setAllMaterials(sortedData);
+      setRecentMaterials(sortedData.slice(0, 5));
+      return sortedData;
     } catch (err) {
       console.error('Failed to fetch materials');
+      return [];
     }
   };
 
@@ -140,7 +172,32 @@ export default function UploadMaterial() {
         setSuccess('Material updated successfully!');
         setEditingId(null);
       } else {
+        // Step 1: Create the material using the API function
         await createMaterial(form);
+        
+        // Step 2: Fetch ALL materials
+        const fetchRes = await fetch(STUDY_API, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const allMaterialsList = await fetchRes.json();
+        
+        // Step 3: Sort by createdAt (newest first) and get the first one
+        const sortedMaterials = [...allMaterialsList].sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        const newMaterial = sortedMaterials[0];
+        
+        console.log('📦 New material added:', newMaterial.title);
+        console.log('📦 New material ID:', newMaterial._id);
+        console.log('📦 Created at:', newMaterial.createdAt);
+        
+        // Step 4: Send notification with the REAL database ID
+        if (newMaterial && newMaterial._id) {
+          addNotification({ ...form, _id: newMaterial._id, createdAt: newMaterial.createdAt });
+        } else {
+          console.error('❌ Failed to get new material ID');
+        }
+        
         setSuccess('Material uploaded successfully!');
       }
       setForm({ title: '', description: '', category: '', fileUrl: '' });
@@ -148,6 +205,7 @@ export default function UploadMaterial() {
       fetchMaterials();
       setActiveTab('manage');
     } catch (err) {
+      console.error('❌ Upload error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to save material');
     } finally {
       setLoading(false);

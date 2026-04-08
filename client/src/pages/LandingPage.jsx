@@ -61,7 +61,7 @@ export default function LandingPage() {
       title: 'Track Applications',
       desc: 'Manage and track all your internship applications in one place.',
       image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=80',
-      color: 'from-orange-600 to-red-600'
+      color: 'from-yellow-600 to-amber-600'
     },
   ];
 
@@ -72,8 +72,15 @@ export default function LandingPage() {
     { name: 'Member D', role: 'Quiz Module', avatar: 'D' },
   ];
 
+  /* ─── shared inline style helpers ─── */
+  const navyInput = {
+    background: '#001233',
+    border: '1px solid #0d3460',
+    color: '#e2eaf4',
+  };
+
   return (
-    <div className="bg-gray-900 text-white min-h-screen">
+    <div style={{ background: '#000d24' }} className="text-white min-h-screen">
 
       {/* Navbar */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-gray-900/98 backdrop-blur-md shadow-lg shadow-black/20 border-b border-blue-900/50' : 'bg-transparent'}`}>
@@ -196,8 +203,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* About Us Section */}
-      <section id="about" className="py-20 px-6">
+      {/* ── About ── */}
+      <section id="about" className="py-20 px-6" style={{ background: '#000d24' }}>
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -205,7 +212,7 @@ export default function LandingPage() {
                 🎓 About Us
               </div>
               <h2 className="text-4xl font-bold text-white mb-6">About InternHub</h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-6">
+              <p className="text-lg leading-relaxed mb-6" style={{ color: '#5a7fa8' }}>
                 InternHub is a full-stack Internship Management System built by a team of undergraduate Software Engineering students at SLIIT (Sri Lanka Institute of Information Technology).
               </p>
               <p className="text-gray-400 text-lg leading-relaxed mb-8">
@@ -234,7 +241,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <div className="text-white font-medium text-sm">{member.name}</div>
-                      <div className="text-gray-400 text-xs">{member.role}</div>
+                      <div className="text-xs" style={{ color: '#5a7fa8' }}>{member.role}</div>
                     </div>
                   </div>
                 ))}
@@ -312,7 +319,7 @@ export default function LandingPage() {
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-yelow-600 rounded-xl flex items-center justify-center text-xl">🎓</div>
                 <span className="text-2xl font-bold text-white">InternHub</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-sm">
+              <p className="text-sm leading-relaxed mb-6 max-w-sm" style={{ color: '#3b5f82' }}>
                 Connecting Sri Lankan students with top companies. Your gateway to internship success — find opportunities, build skills, and launch your career.
               </p>
               <div className="flex gap-3">
