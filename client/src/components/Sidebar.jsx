@@ -5,11 +5,10 @@ import { useAuth } from '../context/AuthContext';
 const navItems = [
   { path: '/student/dashboard',       label: 'Dashboard',       icon: '🏠' },
   { path: '/student/vacancies',       label: 'Vacancies',       icon: '💼' },
-  { path: '/student/applications',    label: 'My Applications', icon: '📋' },
   { path: '/student/study-materials', label: 'Study Materials', icon: '📚' },
   { path: '/student/quizzes',         label: 'Quizzes',         icon: '🧠' },
   { path: '/student/cv-builder',      label: 'CV Builder',      icon: '📄' },
-  { path: '/student/settings', label: 'Settings', icon: '⚙️' },
+  { path: '/student/settings',        label: 'Settings',        icon: '⚙️' },
 ];
 
 export default function Sidebar() {
@@ -23,14 +22,14 @@ export default function Sidebar() {
   };
 
   const handleEditProfile = () => {
-  navigate('/student/settings');
-   };
+    navigate('/student/settings');
+  };
 
   return (
     <>
       <div
         className={`h-screen ${collapsed ? 'w-20' : 'w-64'} text-white flex flex-col fixed left-0 top-0 transition-all duration-300 z-40`}
-        style={{background: 'linear-gradient(180deg, #0a1943 100%, #1d4ed8 0%, #F68048 100%)'}}
+        style={{ background: 'linear-gradient(180deg, #0a1943 100%, #1d4ed8 0%, #F68048 100%)' }}
       >
         {/* Logo + Toggle */}
         <div className={`p-4 border-b border-white/10 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
@@ -55,14 +54,13 @@ export default function Sidebar() {
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
-              {/* Edit icon for collapsed state */}
               <button
                 onClick={handleEditProfile}
                 title="Edit Profile"
                 className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 hover:bg-orange-400 rounded-full flex items-center justify-center transition-all shadow-md opacity-0 group-hover:opacity-100"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white" className="w-2.5 h-2.5">
-                  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5v-.5h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5v-.5h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
                 </svg>
               </button>
             </div>
@@ -72,14 +70,13 @@ export default function Sidebar() {
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
-                {/* Edit icon for expanded state */}
                 <button
                   onClick={handleEditProfile}
                   title="Edit Profile"
                   className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 hover:bg-orange-400 rounded-full flex items-center justify-center transition-all shadow-md opacity-0 group-hover:opacity-100"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white" className="w-2.5 h-2.5">
-                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5v-.5h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5v-.5h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
                   </svg>
                 </button>
               </div>
@@ -87,14 +84,13 @@ export default function Sidebar() {
                 <p className="font-semibold text-sm truncate">{user?.name}</p>
                 <p className="text-blue-200 text-xs truncate">{user?.email}</p>
               </div>
-              {/* Edit button - always visible in expanded mode */}
               <button
                 onClick={handleEditProfile}
                 title="Edit Profile"
                 className="w-7 h-7 rounded-lg bg-white/10 hover:bg-orange-500 flex items-center justify-center transition-all shrink-0 group"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white" className="w-3 h-3">
-                  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5v-.5h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5v-.5h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
                 </svg>
               </button>
             </div>
