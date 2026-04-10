@@ -15,12 +15,11 @@ import PostVacancy from './pages/admin/PostVacancy';
 import ManageVacancies from './pages/admin/ManageVacancies';
 import ManageApplications from './pages/admin/ManageApplications';
 import UploadMaterial from './pages/admin/UploadMaterial';
-import CreateQuiz from './pages/admin/CreateQuiz';
 import LandingPage from './pages/LandingPage';
 import Messages from './pages/admin/Messages';
 import CVBuilder from './pages/student/CVBuilder';
 import Settings from './pages/student/Settings';
-
+import ManageQuizzes from './pages/admin/ManageQuizzes';
 
 
 const StudentLayout = ({ children }) => (
@@ -48,7 +47,10 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     </div>
   );
   if (!user) return <Navigate to="/login" />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/student/dashboard" />;
+  const normalizedRole = String(user?.role || '').trim().toLowerCase();
+  if (adminOnly && !['admin', 'administrator'].includes(normalizedRole)) {
+    return <Navigate to="/student/dashboard" />;
+  }
   return children;
 };
 
@@ -95,9 +97,7 @@ function AppRoutes() {
       <Route path="/admin/upload-material" element={
         <ProtectedRoute adminOnly={true}><AdminLayout><UploadMaterial /></AdminLayout></ProtectedRoute>
       } />
-      <Route path="/admin/create-quiz" element={
-        <ProtectedRoute adminOnly={true}><AdminLayout><CreateQuiz /></AdminLayout></ProtectedRoute>
-      } />
+      
       <Route path="/admin/messages" element={
         <ProtectedRoute adminOnly={true}><AdminLayout><Messages /></AdminLayout></ProtectedRoute>
       } />
@@ -106,6 +106,13 @@ function AppRoutes() {
       } />
       <Route path="/student/settings" element={
         <ProtectedRoute><StudentLayout><Settings /></StudentLayout></ProtectedRoute>
+      } />
+      <Route path="/student/quizzes" element={
+       <ProtectedRoute><StudentLayout><Quizzes /></StudentLayout></ProtectedRoute>
+      } />
+
+      <Route path="/admin/quizzes" element={
+       <ProtectedRoute adminOnly={true}><AdminLayout><ManageQuizzes /></AdminLayout></ProtectedRoute>
       } />
     </Routes>
   );

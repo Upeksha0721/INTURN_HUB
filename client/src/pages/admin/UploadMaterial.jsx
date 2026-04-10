@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { createMaterial } from '../../services/api';
 
@@ -15,6 +16,7 @@ export default function UploadMaterial() {
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'manage'
   const [editingId, setEditingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [descriptionError, setDescriptionError] = useState(''); // ← new: inline description error
   const token = localStorage.getItem('token');
 
   const categories = [
@@ -36,16 +38,84 @@ export default function UploadMaterial() {
     return colors[cat] || 'bg-gray-100 text-gray-700';
   };
 
+  // ── Add Notification to localStorage with REAL database ID ──
+  const addNotification = (material) => {
+    const notifications = JSON.parse(localStorage.getItem('studyMaterialNotifications') || '[]');
+    
+    const newNotification = {
+      id: Date.now(),
+      title: '📚 New Study Material Available!',
+      message: `"${material.title}" has been added to ${material.category} category. Click to view!`,
+      materialId: material._id,  // This is the REAL database ID
+      materialTitle: material.title,
+      category: material.category,
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+    
+    notifications.unshift(newNotification);
+    // Keep only last 20 notifications
+    if (notifications.length > 20) notifications.pop();
+    localStorage.setItem('studyMaterialNotifications', JSON.stringify(notifications));
+    
+    // Trigger event for real-time update
+    window.dispatchEvent(new CustomEvent('newMaterialAdded', { detail: newNotification }));
+    
+    console.log('✅ Notification saved with REAL ID:', material._id);
+  };
+
+  // ── Description validator ──────────────────────────────────────────────────
+  const validateDescription = (value) => {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return 'Description is required. Please describe what students will learn.';
+    }
+
+    // Must be at least 10 characters
+    if (trimmed.length < 10) {
+      return 'Description must be at least 10 characters long.';
+    }
+
+    // Cannot be only numbers (e.g. "12345")
+    if (/^\d+$/.test(trimmed)) {
+      return 'Description cannot contain only numbers. Please enter meaningful text.';
+    }
+
+    // Count how many characters are actual letters (a-z, A-Z, unicode letters)
+    const letterMatches = trimmed.match(/[a-zA-Z\u00C0-\u024F]/g) || [];
+    const letterRatio = letterMatches.length / trimmed.length;
+
+    // Require at least 50% of the characters to be real letters
+    if (letterRatio < 0.5) {
+      return 'Description must contain meaningful text, not mainly numbers or symbols.';
+    }
+
+    // Must contain at least one complete word (2+ letters in a row)
+    if (!/[a-zA-Z]{2,}/.test(trimmed)) {
+      return 'Description must include at least one recognizable word.';
+    }
+
+    return ''; // ✅ valid
+  };
+  // ──────────────────────────────────────────────────────────────────────────
+
   const fetchMaterials = async () => {
     try {
       const res = await fetch(STUDY_API, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      setAllMaterials(data);
-      setRecentMaterials(data.slice(0, 5));
+      // Sort by createdAt date (newest first)
+      const sortedData = [...data].sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setAllMaterials(sortedData);
+      setRecentMaterials(sortedData.slice(0, 5));
+      return sortedData;
     } catch (err) {
       console.error('Failed to fetch materials');
+      return [];
     }
   };
 
@@ -53,11 +123,22 @@ export default function UploadMaterial() {
     fetchMaterials();
   }, []);
 
+  // Live validation as the user types in the description field
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    setForm({ ...form, description: value });
+    if (value.trim()) {
+      setDescriptionError(validateDescription(value));
+    } else {
+      setDescriptionError(''); // don't show error on empty until submit
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Validation
+    // ── Title validation ──
     const onlyNumbers = /^\d+$/.test(form.title.trim());
     if (onlyNumbers) {
       setError('Title cannot contain only numbers. Please enter a valid title.');
@@ -67,8 +148,12 @@ export default function UploadMaterial() {
       setError('Title must be at least 3 characters long.');
       return;
     }
-    if (!form.description.trim()) {
-      setError('Description is required. Please describe what students will learn.');
+
+    // ── Description validation ──
+    const descErr = validateDescription(form.description);
+    if (descErr) {
+      setDescriptionError(descErr);
+      setError(descErr);
       return;
     }
 
@@ -88,13 +173,40 @@ export default function UploadMaterial() {
         setSuccess('Material updated successfully!');
         setEditingId(null);
       } else {
+        // Step 1: Create the material using the API function
         await createMaterial(form);
+        
+        // Step 2: Fetch ALL materials
+        const fetchRes = await fetch(STUDY_API, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const allMaterialsList = await fetchRes.json();
+        
+        // Step 3: Sort by createdAt (newest first) and get the first one
+        const sortedMaterials = [...allMaterialsList].sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        const newMaterial = sortedMaterials[0];
+        
+        console.log('📦 New material added:', newMaterial.title);
+        console.log('📦 New material ID:', newMaterial._id);
+        console.log('📦 Created at:', newMaterial.createdAt);
+        
+        // Step 4: Send notification with the REAL database ID
+        if (newMaterial && newMaterial._id) {
+          addNotification({ ...form, _id: newMaterial._id, createdAt: newMaterial.createdAt });
+        } else {
+          console.error('❌ Failed to get new material ID');
+        }
+        
         setSuccess('Material uploaded successfully!');
       }
       setForm({ title: '', description: '', category: '', fileUrl: '' });
+      setDescriptionError('');
       fetchMaterials();
       setActiveTab('manage');
     } catch (err) {
+      console.error('❌ Upload error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to save material');
     } finally {
       setLoading(false);
@@ -110,12 +222,14 @@ export default function UploadMaterial() {
       fileUrl: material.fileUrl
     });
     setEditingId(material._id);
+    setDescriptionError('');
     setActiveTab('upload');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
+    setDescriptionError('');
     setForm({ title: '', description: '', category: '', fileUrl: '' });
   };
 
@@ -254,6 +368,7 @@ export default function UploadMaterial() {
                 />
               </div>
 
+              {/* ── Description field with live validation ── */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description <span className="text-red-500">*</span>
@@ -261,18 +376,33 @@ export default function UploadMaterial() {
                 <textarea
                   placeholder="Describe what students will learn from this material..."
                   value={form.description}
-                  onChange={e => setForm({ ...form, description: e.target.value })}
+                  onChange={handleDescriptionChange}
                   rows={4}
-                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none ${
-                    !form.description.trim() && error.includes('Description')
-                      ? 'border-red-400 bg-red-50'
-                      : 'border-gray-200'
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm resize-none transition-colors ${
+                    descriptionError
+                      ? 'border-red-400 bg-red-50 focus:ring-red-400'
+                      : form.description.trim() && !descriptionError
+                      ? 'border-green-400 bg-green-50 focus:ring-green-400'
+                      : 'border-gray-200 focus:ring-blue-500'
                   }`}
                 />
-                {!form.description.trim() && (
-                  <p className="text-xs text-gray-400 mt-1">⚠️ Description is required</p>
+
+                {/* Inline feedback messages */}
+                {descriptionError ? (
+                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                    ❌ {descriptionError}
+                  </p>
+                ) : form.description.trim() ? (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    ✅ Looks good!
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-1">
+                    ⚠️ Description is required — only meaningful text is allowed (no numbers only)
+                  </p>
                 )}
               </div>
+              {/* ─────────────────────────────────────────── */}
 
               <button
                 type="submit"

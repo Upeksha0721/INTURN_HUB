@@ -3,6 +3,7 @@ import axios from 'axios';
 const AUTH_URL = 'http://localhost:5001/api';
 const VACANCY_URL = 'http://localhost:5002/api';
 const STUDY_URL = 'http://localhost:5003/api';
+const QUIZ_URL = 'http://localhost:5004/api';  
 
 const getToken = () => localStorage.getItem('token');
 const authHeaders = () => ({
@@ -27,8 +28,7 @@ export const getMaterials = () => axios.get(`${STUDY_URL}/study-materials`, auth
 export const createMaterial = (data) => axios.post(`${STUDY_URL}/study-materials`, data, authHeaders());
 export const deleteMaterial = (id) => axios.delete(`${STUDY_URL}/study-materials/${id}`, authHeaders());
 
-// Quizzes
-export const getQuizzes = () => axios.get(`${AUTH_URL}/quizzes`, authHeaders());
-export const submitQuiz = (id, answers) => axios.post(`${AUTH_URL}/quizzes/${id}/submit`, answers, authHeaders());
-export const getMyProgress = () => axios.get(`${AUTH_URL}/quizzes/progress/me`, authHeaders());
-
+// Quizzes ← FIXED
+export const getQuizzes = () => axios.get(`${QUIZ_URL}/quizzes`, authHeaders());
+export const submitQuiz = (id, answers) => axios.post(`${QUIZ_URL}/quizzes/${id}/submit`, answers, authHeaders());
+export const getMyProgress = () => axios.get(`${QUIZ_URL}/quizzes/results/me`, authHeaders());

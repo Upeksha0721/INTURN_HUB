@@ -468,21 +468,21 @@ export default function PostVacancy() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">💼 Post New Vacancy</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Post New Vacancy</h1>
         <p className="text-gray-500 mt-1">Create a new internship vacancy for students.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-              ✅ {success}
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+              {success}
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-              ❌ {error}
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              {error}
             </div>
           )}
 
@@ -513,7 +513,7 @@ export default function PostVacancy() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100"
               />
               {form.imageUrl && (
                 <div className="mt-2 relative">
@@ -698,7 +698,7 @@ export default function PostVacancy() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] text-sm resize-none"
                 required
               />
             </div>
@@ -706,7 +706,7 @@ export default function PostVacancy() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-semibold py-3.5 rounded-xl transition-all disabled:opacity-50 shadow-lg"
+              className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white font-semibold py-3.5 rounded-lg transition-all disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -726,7 +726,6 @@ export default function PostVacancy() {
 
           {recentVacancies.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
-              <div className="text-4xl mb-2">💼</div>
               <p className="text-sm">No vacancies yet</p>
             </div>
           ) : (
@@ -749,7 +748,6 @@ export default function PostVacancy() {
                       })}
                     </p>
                   </div>
-                  <span className="w-2 h-2 bg-orange-400 rounded-full shrink-0"></span>
                 </div>
               ))}
             </div>
