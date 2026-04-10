@@ -118,10 +118,10 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { label: 'Post Vacancy', path: '/admin/post-vacancy' },
-    { label: 'Manage Users', path: '/admin/users' },
-    { label: 'Upload Material', path: '/admin/upload-material' },
-    { label: 'View Messages', path: '/admin/messages' },
+    { label: 'Post Vacancy', icon: '➕', color: 'bg-blue-800 hover:bg-blue-900', path: '/admin/post-vacancy' },
+    { label: 'Manage Users', icon: '👥', color: 'bg-orange-500 hover:bg-orange-600', path: '/admin/users' },
+    { label: 'Upload Material', icon: '📤', color: 'bg-blue-600 hover:bg-blue-700', path: '/admin/upload-material' },
+    { label: 'View Messages', icon: '📬', color: 'bg-orange-600 hover:bg-orange-700', path: '/admin/messages' },
   ];
 
   return (

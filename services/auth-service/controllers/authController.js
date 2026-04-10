@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user._id, role: user.role },
+    { id: user._id, role: user.role, name: user.name, itNumber: user.itNumber || '' },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -13,7 +13,7 @@ const generateToken = (user) => {
 // @POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, itNumber } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -21,12 +21,12 @@ exports.register = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashed, role });
+    const user = await User.create({ name, email, password: hashed, role, itNumber });
 
     res.status(201).json({
       message: 'User registered successfully',
       token: generateToken(user),
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, itNumber: user.itNumber || '' }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
     res.json({
       message: 'Login successful',
       token: generateToken(user),
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, itNumber: user.itNumber || '' }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -95,13 +95,14 @@ exports.deleteUser = async (req, res) => {
 // @PUT /api/auth/profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, phone, password, photo } = req.body;
+    const { name, email, phone, password, photo, itNumber } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     if (name) user.name = name;
     if (email) user.email = email;
     if (phone) user.phone = phone;
+    if (itNumber !== undefined) user.itNumber = itNumber;
     if (photo) user.photo = photo;
     if (password) {
       const bcrypt = require('bcryptjs');
@@ -109,7 +110,7 @@ exports.updateProfile = async (req, res) => {
     }
 
     await user.save();
-    res.json({ message: 'Profile updated successfully', user: { id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone, photo: user.photo } });
+    res.json({ message: 'Profile updated successfully', user: { id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone, itNumber: user.itNumber || '', photo: user.photo } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

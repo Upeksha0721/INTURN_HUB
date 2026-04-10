@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { createMaterial } from '../../services/api';
 
@@ -49,18 +50,18 @@ export default function UploadMaterial() {
     }
   };
 
-  const fetchMaterials = async () => {
-    try {
-      const res = await fetch(STUDY_API, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setAllMaterials(data);
-      setRecentMaterials(data.slice(0, 5));
-    } catch (err) {
-      console.error('Failed to fetch materials');
-    }
-  };
+  // const fetchMaterials = async () => {
+  //   try {
+  //     const res = await fetch(STUDY_API, {
+  //       headers: { Authorization: `Bearer ${token}` }
+  //     });
+  //     const data = await res.json();
+  //     setAllMaterials(data);
+  //     setRecentMaterials(data.slice(0, 5));
+  //   } catch (err) {
+  //     console.error('Failed to fetch materials');
+  //   }
+  // };
 
   useEffect(() => {
     fetchMaterials();
