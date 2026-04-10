@@ -11,7 +11,8 @@ const INITIAL_FORM = {
   imageUrl: '',
   salary: '',
   jobType: 'Internship',
-  skills: ''
+  skills: '',
+  applicationUrl: ''
 };
 
 const stripCommas = (value) => value.replace(/,/g, '');
@@ -44,12 +45,10 @@ const validateSalary = (value) => {
 const validateTitle = (value) => {
   if (!value.trim()) return 'Job title is required';
 
-  // Check if it contains at least one letter
   if (!/[a-zA-Z]/.test(value)) {
     return 'Job title must contain letters';
   }
 
-  // Check if it contains any numbers
   if (/\d/.test(value)) {
     return 'Job title cannot contain numbers';
   }
@@ -60,12 +59,10 @@ const validateTitle = (value) => {
 const validateCompany = (value) => {
   if (!value.trim()) return 'Company name is required';
 
-  // Check if it contains at least one letter
   if (!/[a-zA-Z]/.test(value)) {
     return 'Company name must contain letters';
   }
 
-  // Check if it contains any numbers
   if (/\d/.test(value)) {
     return 'Company name cannot contain numbers';
   }
@@ -76,14 +73,70 @@ const validateCompany = (value) => {
 const validateLocation = (value) => {
   if (!value.trim()) return 'Location is required';
 
-  // Check if it contains letters or numbers
   if (!/[a-zA-Z0-9]/.test(value)) {
     return 'Location must contain letters or numbers';
   }
 
-  // Check for special symbols (excluding common separators like comma, space, dash, period)
-  if (/[^a-zA-Z0-9\s,\-\.]/.test(value)) {
+  if (/[^a-zA-Z0-9\s,\-.]/.test(value)) {
     return 'Location cannot contain special symbols';
+  }
+
+  return '';
+};
+
+const validateDeadline = (value) => {
+  if (!value) return 'Application deadline is required';
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return 'Please enter a valid date';
+  }
+
+  const [year] = value.split('-');
+
+  if (year.length !== 4) {
+    return 'Year must contain exactly 4 digits';
+  }
+
+  const deadlineDate = new Date(value);
+  if (Number.isNaN(deadlineDate.getTime())) {
+    return 'Please enter a valid date';
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  deadlineDate.setHours(0, 0, 0, 0);
+
+  if (deadlineDate < today) {
+    return 'Deadline cannot be in the past';
+  }
+
+  return '';
+};
+
+const validateSkills = (value) => {
+  if (!value.trim()) return 'At least one skill is required';
+
+  if (!/[a-zA-Z]/.test(value)) {
+    return 'Skills must contain letters';
+  }
+
+  if (/\d/.test(value)) {
+    return 'Skills cannot contain numbers';
+  }
+
+  return '';
+};
+
+const validateApplicationUrl = (value) => {
+  if (!value.trim()) return 'Application URL is required';
+
+  try {
+    const parsedUrl = new URL(value);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return 'Please enter a valid URL';
+    }
+  } catch {
+    return 'Please enter a valid URL';
   }
 
   return '';
@@ -134,6 +187,25 @@ const normalizeSalaryForSubmit = (value) => {
   return cleanValue;
 };
 
+const getDemoVacancy = () => {
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 15);
+
+  return {
+    title: 'Frontend Developer Intern',
+    company: 'ABC Technologies',
+    description:
+      'We are looking for a motivated Frontend Developer Intern to join our team. The candidate should have basic knowledge of React, JavaScript, HTML, CSS, and responsive web design.',
+    location: 'Colombo',
+    deadline: futureDate.toISOString().split('T')[0],
+    imageUrl: '',
+    salary: '45000.00',
+    jobType: 'Internship',
+    skills: 'React, JavaScript, HTML, CSS',
+    applicationUrl: 'https://example.com/apply/frontend-developer-intern'
+  };
+};
+
 export default function PostVacancy() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [success, setSuccess] = useState('');
@@ -146,6 +218,9 @@ export default function PostVacancy() {
   const [titleError, setTitleError] = useState('');
   const [companyError, setCompanyError] = useState('');
   const [locationError, setLocationError] = useState('');
+  const [deadlineError, setDeadlineError] = useState('');
+  const [skillsError, setSkillsError] = useState('');
+  const [applicationUrlError, setApplicationUrlError] = useState('');
 
   const token = localStorage.getItem('token');
 
@@ -156,7 +231,7 @@ export default function PostVacancy() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        setRecentVacancies(data.slice(0, 5));
+        setRecentVacancies(Array.isArray(data) ? data.slice(0, 5) : []);
       } catch (err) {
         console.error('Failed to fetch vacancies');
       }
@@ -164,6 +239,30 @@ export default function PostVacancy() {
 
     fetchRecent();
   }, [success, token]);
+
+  const resetValidationStates = () => {
+    setSalaryError('');
+    setSalaryFocused(false);
+    setSalaryTouched(false);
+    setTitleError('');
+    setCompanyError('');
+    setLocationError('');
+    setDeadlineError('');
+    setSkillsError('');
+    setApplicationUrlError('');
+    setError('');
+    setSuccess('');
+  };
+
+  const handleLoadDemo = () => {
+    setForm(getDemoVacancy());
+    resetValidationStates();
+  };
+
+  const handleClearForm = () => {
+    setForm(INITIAL_FORM);
+    resetValidationStates();
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -270,23 +369,59 @@ export default function PostVacancy() {
     setLocationError(validateLocation(value));
   };
 
+  const handleDeadlineChange = (e) => {
+    const value = e.target.value;
+
+    if (value) {
+      const [year = ''] = value.split('-');
+      if (year.length > 4) return;
+    }
+
+    setForm({ ...form, deadline: value });
+    setDeadlineError(validateDeadline(value));
+  };
+
+  const handleSkillsChange = (e) => {
+    const value = e.target.value;
+    setForm({ ...form, skills: value });
+    setSkillsError(validateSkills(value));
+  };
+
+  const handleApplicationUrlChange = (e) => {
+    const value = e.target.value;
+    setForm({ ...form, applicationUrl: value });
+    setApplicationUrlError(validateApplicationUrl(value));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate all fields
-    const titleError = validateTitle(form.title);
-    const companyError = validateCompany(form.company);
-    const locationError = validateLocation(form.location);
-    const salaryError = validateSalary(form.salary);
+    const titleErrorValue = validateTitle(form.title);
+    const companyErrorValue = validateCompany(form.company);
+    const locationErrorValue = validateLocation(form.location);
+    const salaryErrorValue = validateSalary(form.salary);
+    const deadlineErrorValue = validateDeadline(form.deadline);
+    const skillsErrorValue = validateSkills(form.skills);
+    const applicationUrlErrorValue = validateApplicationUrl(form.applicationUrl);
 
-    setTitleError(titleError);
-    setCompanyError(companyError);
-    setLocationError(locationError);
-    setSalaryError(salaryError);
+    setTitleError(titleErrorValue);
+    setCompanyError(companyErrorValue);
+    setLocationError(locationErrorValue);
+    setSalaryError(salaryErrorValue);
+    setDeadlineError(deadlineErrorValue);
+    setSkillsError(skillsErrorValue);
+    setApplicationUrlError(applicationUrlErrorValue);
     setSalaryTouched(true);
 
-    // Check if any validation errors exist
-    if (titleError || companyError || locationError || salaryError) {
+    if (
+      titleErrorValue ||
+      companyErrorValue ||
+      locationErrorValue ||
+      salaryErrorValue ||
+      deadlineErrorValue ||
+      skillsErrorValue ||
+      applicationUrlErrorValue
+    ) {
       setError('Please correct the validation errors before submitting.');
       return;
     }
@@ -299,7 +434,11 @@ export default function PostVacancy() {
       const payload = {
         ...form,
         salary: form.salary ? normalizeSalaryForSubmit(form.salary) : '',
-        skills: form.skills.split(',').map((s) => s.trim()).filter((s) => s)
+        skills: form.skills
+          .split(',')
+          .map((s) => s.trim())
+          .filter((s) => s),
+        applicationUrl: form.applicationUrl.trim()
       };
 
       const res = await fetch(VACANCY_API, {
@@ -314,12 +453,7 @@ export default function PostVacancy() {
       if (res.ok) {
         setSuccess('Vacancy posted successfully!');
         setForm(INITIAL_FORM);
-        setSalaryError('');
-        setSalaryTouched(false);
-        setSalaryFocused(false);
-        setTitleError('');
-        setCompanyError('');
-        setLocationError('');
+        resetValidationStates();
       } else {
         const data = await res.json();
         setError(data.message || 'Failed to post vacancy');
@@ -339,8 +473,7 @@ export default function PostVacancy() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form - Left Side */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           {success && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
               {success}
@@ -354,7 +487,24 @@ export default function PostVacancy() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Image Upload */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={handleLoadDemo}
+                className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-medium transition border border-blue-200"
+              >
+                Fill Demo Data
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClearForm}
+                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition"
+              >
+                Clear Form
+              </button>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Company Image <span className="text-gray-400">(optional)</span>
@@ -383,7 +533,6 @@ export default function PostVacancy() {
               )}
             </div>
 
-            {/* Title & Company */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
@@ -424,7 +573,6 @@ export default function PostVacancy() {
               </div>
             </div>
 
-            {/* Location & Job Type */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
@@ -459,7 +607,6 @@ export default function PostVacancy() {
               </div>
             </div>
 
-            {/* Salary & Deadline */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -488,15 +635,22 @@ export default function PostVacancy() {
                 <input
                   type="date"
                   min={new Date().toISOString().split('T')[0]}
+                  max="2026-12-31"
                   value={form.deadline}
-                  onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  onChange={handleDeadlineChange}
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                    deadlineError
+                      ? 'border-red-400 focus:ring-red-500'
+                      : 'border-gray-200 focus:ring-blue-500'
+                  }`}
                   required
                 />
+                {deadlineError && (
+                  <p className="text-sm text-red-500 mt-1">{deadlineError}</p>
+                )}
               </div>
             </div>
 
-            {/* Skills */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Required Skills <span className="text-gray-400">(comma separated)</span>
@@ -505,12 +659,38 @@ export default function PostVacancy() {
                 type="text"
                 placeholder="e.g. React, Node.js, MongoDB"
                 value={form.skills}
-                onChange={(e) => setForm({ ...form, skills: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                onChange={handleSkillsChange}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  skillsError
+                    ? 'border-red-400 focus:ring-red-500'
+                    : 'border-gray-200 focus:ring-blue-500'
+                }`}
+                required
               />
+              {skillsError && (
+                <p className="text-sm text-red-500 mt-1">{skillsError}</p>
+              )}
             </div>
 
-            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Application URL</label>
+              <input
+                type="text"
+                placeholder="e.g. https://company.com/apply"
+                value={form.applicationUrl}
+                onChange={handleApplicationUrlChange}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
+                  applicationUrlError
+                    ? 'border-red-400 focus:ring-red-500'
+                    : 'border-gray-200 focus:ring-blue-500'
+                }`}
+                required
+              />
+              {applicationUrlError && (
+                <p className="text-sm text-red-500 mt-1">{applicationUrlError}</p>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
@@ -540,8 +720,7 @@ export default function PostVacancy() {
           </form>
         </div>
 
-        {/* Recent Vacancies - Right Side */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-fit sticky top-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
           <h2 className="text-lg font-bold text-gray-800 mb-1">Recently Posted</h2>
           <p className="text-gray-400 text-sm mb-5">Last 5 vacancies uploaded</p>
 

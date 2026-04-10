@@ -6,56 +6,75 @@ const VACANCY_API = 'http://localhost:5002/api/vacancies';
 export default function Vacancies() {
   const [vacancies, setVacancies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [applying, setApplying] = useState(null);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedVacancy, setSelectedVacancy] = useState(null);
-  const token = localStorage.getItem('token');
+  const [error, setError] = useState('');
+
+  const isExpired = (deadline) => {
+    if (!deadline) return false;
+    return new Date(deadline) < new Date();
+  };
 
   useEffect(() => {
     const fetchVacancies = async () => {
       try {
-        const res = await fetch(VACANCY_API, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        setLoading(true);
+        setError('');
+
+        const res = await fetch(VACANCY_API);
         const data = await res.json();
-        setVacancies(data);
+
+        if (!Array.isArray(data)) {
+          setVacancies([]);
+          setError('Invalid vacancy data received.');
+          return;
+        }
+
+        const visibleVacancies = data.filter((v) => !isExpired(v.deadline));
+        setVacancies(visibleVacancies);
       } catch (err) {
-        console.error('Failed to fetch vacancies');
+        console.error('Failed to fetch vacancies', err);
+        setVacancies([]);
+        setError('Failed to fetch vacancies.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchVacancies();
-  }, [token]);
+  }, []);
 
-  const handleApply = async (id) => {
-    setApplying(id);
+  const openVacancyDetails = async (vacancy) => {
     try {
-      const res = await fetch(`${VACANCY_API}/${id}/apply`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${VACANCY_API}/${vacancy._id}/view`, {
+        method: 'PATCH'
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        alert('✅ Applied successfully!');
+        setVacancies((prev) =>
+          prev.map((v) => (v._id === vacancy._id ? data : v))
+        );
+        setSelectedVacancy(data);
       } else {
-        alert(`❌ ${data.message || 'Failed to apply'}`);
+        setSelectedVacancy(vacancy);
       }
-    } catch {
-      alert('❌ Failed to apply');
-    } finally {
-      setApplying(null);
+    } catch (err) {
+      console.error('Failed to update vacancy view count', err);
+      setSelectedVacancy(vacancy);
     }
   };
 
   const jobTypeColor = (type) => {
-    if (type === 'Full-time') return 'bg-green-100 text-green-700 border border-green-200';
-    if (type === 'Part-time') return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
+    if (type === 'Full-time') {
+      return 'bg-green-100 text-green-700 border border-green-200';
+    }
+    if (type === 'Part-time') {
+      return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
+    }
     return 'bg-blue-100 text-blue-700 border border-blue-200';
   };
 
@@ -71,7 +90,9 @@ export default function Vacancies() {
   });
 
   const totalCount = vacancies.length;
-  const internshipCount = vacancies.filter((v) => v.jobType === 'Internship' || !v.jobType).length;
+  const internshipCount = vacancies.filter(
+    (v) => v.jobType === 'Internship' || !v.jobType
+  ).length;
   const fullTimeCount = vacancies.filter((v) => v.jobType === 'Full-time').length;
   const partTimeCount = vacancies.filter((v) => v.jobType === 'Part-time').length;
 
@@ -85,7 +106,6 @@ export default function Vacancies() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      {/* Image Modal */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
@@ -110,97 +130,144 @@ export default function Vacancies() {
         </div>
       )}
 
-      {/* Description Modal */}
       {selectedVacancy && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/60 z-50 p-4 overflow-y-auto"
           onClick={() => setSelectedVacancy(null)}
         >
-          <div
-            className="relative max-w-2xl w-full bg-white rounded-3xl shadow-2xl border border-gray-100 p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedVacancy(null)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg"
+          <div className="min-h-full flex items-center justify-center py-6">
+            <div
+              className="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-gray-100 p-6"
+              onClick={(e) => e.stopPropagation()}
             >
-              ✕
-            </button>
+              <button
+                onClick={() => setSelectedVacancy(null)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg"
+              >
+                ✕
+              </button>
 
-            <div className="pr-12">
-              <div className="flex items-center gap-3 mb-3">
-                <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${jobTypeColor(selectedVacancy.jobType)}`}>
-                  {selectedVacancy.jobType || 'Internship'}
-                </span>
-                {selectedVacancy.deadline && (
-                  <span className="text-xs text-gray-400">
-                    ⏰ {new Date(selectedVacancy.deadline).toLocaleDateString()}
+              <div className="pr-12">
+                <div className="flex items-center gap-3 mb-3">
+                  <span
+                    className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${jobTypeColor(
+                      selectedVacancy.jobType
+                    )}`}
+                  >
+                    {selectedVacancy.jobType || 'Internship'}
                   </span>
-                )}
-              </div>
 
-              <h2 className="text-2xl font-bold text-gray-800 mb-1">{selectedVacancy.title}</h2>
-              <p className="text-blue-700 font-medium text-sm mb-1">🏢 {selectedVacancy.company}</p>
-              <p className="text-gray-500 text-sm mb-4">📍 {selectedVacancy.location}</p>
-
-              {selectedVacancy.salary && (
-                <div className="mb-4">
-                  <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-200">
-                    💰 {selectedVacancy.salary}
-                  </span>
+                  {selectedVacancy.deadline && (
+                    <span className="text-xs text-gray-400">
+                      ⏰ {new Date(selectedVacancy.deadline).toLocaleDateString()}
+                    </span>
+                  )}
                 </div>
-              )}
 
-              <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-4">
-                <p className="text-sm text-gray-600 leading-7 whitespace-pre-line">
-                  {selectedVacancy.description}
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                  {selectedVacancy.title}
+                </h2>
+                <p className="text-blue-700 font-medium text-sm mb-1">
+                  🏢 {selectedVacancy.company}
                 </p>
-              </div>
+                <p className="text-gray-500 text-sm mb-1">
+                  📍 {selectedVacancy.location}
+                </p>
+                <p className="text-gray-400 text-xs mb-4">
+                  👁️ {selectedVacancy.viewCount || 0} views
+                </p>
 
-              {selectedVacancy.skills?.length > 0 && (
+                {selectedVacancy.salary && (
+                  <div className="mb-4">
+                    <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-200">
+                      💰 {selectedVacancy.salary}
+                    </span>
+                  </div>
+                )}
+
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-4">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    Job Summary
+                  </p>
+                  <p className="text-sm text-gray-600 leading-7 whitespace-pre-line">
+                    {selectedVacancy.description || 'No job summary available.'}
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4">
+                  <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">
+                    Company
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    {selectedVacancy.company || 'No company name available.'}
+                  </p>
+                </div>
+
+                {selectedVacancy.skills?.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      Required Skills
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVacancy.skills.map((skill, index) => (
+                        <span
+                          key={`${skill}-${index}`}
+                          className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs border border-gray-200"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="mb-6">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Required Skills
+                    Application URL
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedVacancy.skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs border border-gray-200"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              <button
-                onClick={() => handleApply(selectedVacancy._id)}
-                disabled={applying === selectedVacancy._id}
-                className="w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 shadow-lg"
-              >
-                {applying === selectedVacancy._id ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Applying...
-                  </span>
-                ) : (
-                  '🚀 Apply Now'
-                )}
-              </button>
+                  {selectedVacancy.applicationUrl ? (
+                    <div className="bg-green-50 border border-green-100 rounded-2xl p-4">
+                      <p className="text-sm text-gray-700 break-all mb-4">
+                        {selectedVacancy.applicationUrl}
+                      </p>
+
+                      <a
+                        href={selectedVacancy.applicationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all shadow-lg"
+                      >
+                        Proceed to Application
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
+                      <p className="text-sm text-red-600">
+                        Application URL is not available for this vacancy.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">💼 Internship Vacancies</h1>
-        <p className="text-gray-500 mt-1">Discover and apply for your next great opportunity.</p>
+        <p className="text-gray-500 mt-1">
+          Discover and apply for your next great opportunity.
+        </p>
       </div>
 
-      {/* Top Bar */}
+      {error && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+          <p className="text-red-700 font-medium">{error}</p>
+        </div>
+      )}
+
       <div className="space-y-6 mb-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
@@ -210,7 +277,9 @@ export default function Vacancies() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-800">Vacancy Hub</h2>
-                <p className="text-gray-500 text-sm">Browse available internship opportunities</p>
+                <p className="text-gray-500 text-sm">
+                  Browse available internship opportunities
+                </p>
               </div>
             </div>
 
@@ -241,7 +310,9 @@ export default function Vacancies() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search Vacancies</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search Vacancies
+              </label>
               <input
                 type="text"
                 placeholder="Search by title or company..."
@@ -252,7 +323,9 @@ export default function Vacancies() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Type
+              </label>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
@@ -268,7 +341,6 @@ export default function Vacancies() {
         </div>
       </div>
 
-      {/* Bottom Content */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
@@ -294,7 +366,9 @@ export default function Vacancies() {
               💼
             </div>
             <p className="text-lg font-semibold text-gray-600">No vacancies found</p>
-            <p className="text-sm mt-1">Try adjusting your search term or job type filter.</p>
+            <p className="text-sm mt-1">
+              Try adjusting your search term or job type filter.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -327,7 +401,11 @@ export default function Vacancies() {
 
                 <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-3 mb-4">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${jobTypeColor(vacancy.jobType)}`}>
+                    <span
+                      className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${jobTypeColor(
+                        vacancy.jobType
+                      )}`}
+                    >
                       {vacancy.jobType || 'Internship'}
                     </span>
 
@@ -339,8 +417,13 @@ export default function Vacancies() {
                   </div>
 
                   <h3 className="text-lg font-bold text-gray-800 mb-1">{vacancy.title}</h3>
-                  <p className="text-blue-700 font-medium text-sm mb-1">🏢 {vacancy.company}</p>
-                  <p className="text-gray-500 text-sm mb-3">📍 {vacancy.location}</p>
+                  <p className="text-blue-700 font-medium text-sm mb-1">
+                    🏢 {vacancy.company}
+                  </p>
+                  <p className="text-gray-500 text-sm mb-1">📍 {vacancy.location}</p>
+                  <p className="text-gray-400 text-xs mb-3">
+                    👁️ {vacancy.viewCount || 0} views
+                  </p>
 
                   {vacancy.salary && (
                     <div className="mb-3">
@@ -358,7 +441,7 @@ export default function Vacancies() {
                     {vacancy.description && vacancy.description.length > 120 && (
                       <button
                         type="button"
-                        onClick={() => setSelectedVacancy(vacancy)}
+                        onClick={() => openVacancyDetails(vacancy)}
                         className="mt-2 text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
                       >
                         See more
@@ -373,9 +456,9 @@ export default function Vacancies() {
                           Required Skills
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {vacancy.skills.slice(0, 4).map((skill) => (
+                          {vacancy.skills.slice(0, 4).map((skill, index) => (
                             <span
-                              key={skill}
+                              key={`${skill}-${index}`}
                               className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs border border-gray-200"
                             >
                               {skill}
@@ -393,18 +476,11 @@ export default function Vacancies() {
 
                   <div className="mt-auto">
                     <button
-                      onClick={() => handleApply(vacancy._id)}
-                      disabled={applying === vacancy._id}
+                      onClick={() => openVacancyDetails(vacancy)}
+                      disabled={isExpired(vacancy.deadline)}
                       className="w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 shadow-lg"
                     >
-                      {applying === vacancy._id ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          Applying...
-                        </span>
-                      ) : (
-                        '🚀 Apply Now'
-                      )}
+                      {isExpired(vacancy.deadline) ? 'Expired' : '🚀 Apply Now'}
                     </button>
                   </div>
                 </div>
