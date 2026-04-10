@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/Spinner';
+import NotificationBell from '../../components/NotificationBell';
 
 const STUDY_API = 'http://localhost:5003/api/study-materials';
 const AUTH_API = 'http://localhost:5001/api/auth';
@@ -74,6 +75,7 @@ export default function Dashboard() {
             <p className="text-blue-200">Ready to find your dream internship today?</p>
           </div>
           <div className="hidden md:flex items-center gap-4">
+            <NotificationBell />
             <div className="text-right">
               <p className="text-white font-semibold">{profile?.name}</p>
               <p className="text-yellow-500 text-sm">{profile?.email}</p>
