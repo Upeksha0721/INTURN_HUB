@@ -47,7 +47,10 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     </div>
   );
   if (!user) return <Navigate to="/login" />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/student/dashboard" />;
+  const normalizedRole = String(user?.role || '').trim().toLowerCase();
+  if (adminOnly && !['admin', 'administrator'].includes(normalizedRole)) {
+    return <Navigate to="/student/dashboard" />;
+  }
   return children;
 };
 
@@ -109,7 +112,7 @@ function AppRoutes() {
       } />
 
       <Route path="/admin/quizzes" element={
-       <ProtectedRoute><AdminLayout><ManageQuizzes /></AdminLayout></ProtectedRoute>
+       <ProtectedRoute adminOnly={true}><AdminLayout><ManageQuizzes /></AdminLayout></ProtectedRoute>
       } />
     </Routes>
   );
