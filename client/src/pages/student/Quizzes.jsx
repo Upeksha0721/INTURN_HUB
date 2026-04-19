@@ -247,32 +247,346 @@ export default function Quizzes() {
   };
 
   const downloadStudentPdf = async () => {
-    try {
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const title = selectedCard === 'All' ? 'Student Overall Quiz Report' : `Student Quiz Report - ${activeCard?.title || selectedCard}`;
-      const rows = selectedCard === 'All' ? overallResults : filteredResults;
-      let y = 14;
-      pdf.setFontSize(14);
-      pdf.text(title, 12, y);
-      y += 8;
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 14;
+    const contentWidth = pageWidth - margin * 2;
+    const maxY = pageHeight - 18;
+
+    let pageNum = 1;
+    let y = 0;
+
+    const addHeader = () => {
+      pdf.setFillColor(20, 40, 115);
+      pdf.rect(0, 0, pageWidth, 26, 'F');
+
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(18);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('INTURN HUB', margin, 10);
+
       pdf.setFontSize(10);
-      pdf.text(`Generated: ${new Date().toLocaleString()}`, 12, y);
-      y += 7;
-      const insight = selectedCard === 'All' ? overallInsights : categoryInsights;
-      pdf.text(`Attempts: ${rows.length}`, 12, y); y += 6;
-      pdf.text(`Accuracy: ${insight.accuracyPct}%`, 12, y); y += 8;
-      pdf.text('Recent Attempts:', 12, y); y += 6;
-      rows.slice(0, 20).forEach((r, i) => {
-        const line = `${i + 1}. ${r.quizId?.title || 'Quiz'} | ${r.percentage}% | ${new Date(r.createdAt).toLocaleDateString()}`;
-        pdf.text(line.slice(0, 110), 12, y);
-        y += 5;
-        if (y > 280) { pdf.addPage(); y = 12; }
+      pdf.setFont(undefined, 'normal');
+      pdf.text('Student Quiz Performance Report', margin, 16);
+
+      pdf.setFillColor(240, 245, 255);
+      pdf.rect(0, 18, pageWidth, 8, 'F');
+
+      pdf.setTextColor(40, 40, 40);
+      pdf.setFontSize(8);
+      pdf.text(`Student: ${identity.studentName || 'N/A'}`, margin, 23);
+      pdf.text(`IT Number: ${identity.studentItNumber || 'N/A'}`, pageWidth / 2 + margin, 23);
+
+      return 30;
+    };
+
+    const addFooter = () => {
+      pdf.setDrawColor(190, 190, 190);
+      pdf.setLineWidth(0.3);
+      pdf.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
+
+      pdf.setTextColor(120, 120, 120);
+      pdf.setFontSize(7);
+      pdf.setFont(undefined, 'normal');
+
+      const generatedAt = new Date().toLocaleString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
       });
-      pdf.save(selectedCard === 'All' ? 'student-overall-report.pdf' : `${selectedCard}-report.pdf`);
-    } catch (e) {
-      console.error('Failed to generate student PDF');
+
+      pdf.text(`Generated: ${generatedAt}`, margin, pageHeight - 6);
+      pdf.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 6, { align: 'right' });
+      pdf.text('Confidential - Student use only', pageWidth / 2, pageHeight - 6, { align: 'center' });
+    };
+
+    const addPage = () => {
+      addFooter();
+      pdf.addPage();
+      pageNum += 1;
+      return addHeader();
+    };
+
+    const rows = selectedCard === 'All' ? overallResults : filteredResults;
+    const insight = selectedCard === 'All' ? overallInsights : categoryInsights;
+    const title = selectedCard === 'All'
+      ? 'Overall Quiz Performance'
+      : `${activeCard?.title || selectedCard} Quiz Performance`;
+
+    y = addHeader();
+    y += 4;
+
+    pdf.setTextColor(20, 40, 115);
+    pdf.setFontSize(20);
+    pdf.setFont(undefined, 'bold');
+    pdf.text(title, margin, y);
+    y += 8;
+
+    pdf.setFontSize(9);
+    pdf.setFont(undefined, 'normal');
+    const subtitle = selectedCard === 'All'
+      ? 'Summary of performance across all quiz categories'
+      : `Summary for ${activeCard?.title || selectedCard}`;
+    pdf.setTextColor(90, 90, 90);
+    pdf.text(subtitle, margin, y);
+    y += 10;
+
+    const statWidth = (contentWidth - 8) / 3;
+    pdf.setDrawColor(210, 220, 235);
+    pdf.rect(margin, y, contentWidth, 32, 'FD');
+
+    // Stat 1
+    pdf.setFillColor(235, 242, 255);
+    pdf.rect(margin + 1, y + 1, statWidth, 30, 'F');
+    pdf.setTextColor(20, 40, 115);
+    pdf.setFontSize(18);
+    pdf.setFont(undefined, 'bold');
+    pdf.text(String(rows.length), margin + 6, y + 12);
+    pdf.setFontSize(8);
+    pdf.setTextColor(90, 100, 130);
+    pdf.text('Quizzes Attempted', margin + 6, y + 19);
+
+    // Stat 2
+    pdf.setFillColor(233, 255, 235);
+    pdf.rect(margin + statWidth + 3, y + 1, statWidth, 30, 'F');
+    pdf.setTextColor(22, 120, 39);
+    pdf.setFontSize(18);
+    pdf.text(`${insight.accuracyPct}%`, margin + statWidth + 9, y + 12);
+    pdf.setFontSize(8);
+    pdf.setTextColor(90, 100, 130);
+    pdf.text('Accuracy', margin + statWidth + 9, y + 19);
+
+    // Stat 3
+    const passCount = rows.filter(r => r.percentage >= 60).length;
+    const passRate = rows.length ? Math.round((passCount / rows.length) * 100) : 0;
+    pdf.setFillColor(255, 251, 236);
+    pdf.rect(margin + statWidth * 2 + 5, y + 1, statWidth, 30, 'F');
+    pdf.setTextColor(165, 115, 20);
+    pdf.setFontSize(18);
+    pdf.text(`${passRate}%`, margin + statWidth * 2 + 11, y + 12);
+    pdf.setFontSize(8);
+    pdf.setTextColor(90, 100, 130);
+    pdf.text('Pass Rate', margin + statWidth * 2 + 11, y + 19);
+
+    y += 40;
+
+    if (y > maxY - 80) {
+      y = addPage();
     }
-  };
+
+    pdf.setTextColor(20, 40, 115);
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Performance Overview', margin, y);
+    y += 8;
+
+    pdf.setFontSize(9);
+    pdf.setFont(undefined, 'normal');
+    pdf.setTextColor(80, 80, 80);
+    pdf.text(`Total questions attempted: ${insight.totalQuestions}`, margin, y);
+    y += 6;
+    pdf.text(`Total correct answers: ${insight.totalCorrect}`, margin, y);
+    y += 6;
+    pdf.text(`Total incorrect answers: ${Math.max(0, insight.totalQuestions - insight.totalCorrect)}`, margin, y);
+    y += 6;
+    pdf.text(`Average Quiz Score: ${insight.accuracyPct}%`, margin, y);
+    y += 12;
+
+    const categoryData = insight.barData || [];
+    if (categoryData.length > 0) {
+      if (y > maxY - 60) {
+        y = addPage();
+      }
+
+      pdf.setTextColor(20, 40, 115);
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Category Breakdown', margin, y);
+      y += 8;
+
+      const tableX = margin;
+      const tableW = contentWidth;
+      const col1 = tableX + 2;
+      const col2 = tableX + 90;
+      const rowH = 7;
+
+      pdf.setFillColor(24, 44, 122);
+      pdf.rect(tableX, y - 6, tableW, rowH, 'F');
+      pdf.setFontSize(8);
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Category', col1, y - 2);
+      pdf.text('Average %', col2, y - 2);
+      y += 6;
+
+      pdf.setFontSize(8);
+      pdf.setFont(undefined, 'normal');
+      categoryData.forEach((item, idx) => {
+        if (y > maxY - 14) {
+          y = addPage();
+          pdf.setFillColor(24, 44, 122);
+          pdf.rect(tableX, y - 6, tableW, rowH, 'F');
+          pdf.setFontSize(8);
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFont(undefined, 'bold');
+          pdf.text('Category', col1, y - 2);
+          pdf.text('Average %', col2, y - 2);
+          y += 6;
+          pdf.setFont(undefined, 'normal');
+          pdf.setTextColor(60, 60, 60);
+        }
+
+        if (idx % 2 === 0) {
+          pdf.setFillColor(248, 249, 252);
+          pdf.rect(tableX, y - 5, tableW, rowH, 'F');
+        }
+        pdf.setTextColor(60, 60, 60);
+        pdf.text(item.category, col1, y - 1);
+        pdf.text(`${item.score}%`, col2, y - 1);
+        y += rowH;
+      });
+
+      y += 8;
+    }
+
+    if (y > maxY - 90) {
+      y = addPage();
+    }
+
+    pdf.setTextColor(20, 40, 115);
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Recent Attempts', margin, y);
+    y += 8;
+
+    pdf.setFillColor(24, 44, 122);
+    pdf.rect(margin, y - 6, contentWidth, 7, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(8);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Quiz', margin + 2, y - 2);
+    pdf.text('Score', margin + 85, y - 2);
+    pdf.text('Result', margin + 115, y - 2);
+    pdf.text('Date', margin + 145, y - 2);
+    y += 6;
+
+    pdf.setFontSize(8);
+    pdf.setFont(undefined, 'normal');
+    pdf.setTextColor(60, 60, 60);
+
+    rows.slice(0, 16).forEach((r, idx) => {
+      if (y > maxY - 10) {
+        y = addPage();
+        pdf.setFillColor(24, 44, 122);
+        pdf.rect(margin, y - 6, contentWidth, 7, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(8);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Quiz', margin + 2, y - 2);
+        pdf.text('Score', margin + 85, y - 2);
+        pdf.text('Result', margin + 115, y - 2);
+        pdf.text('Date', margin + 145, y - 2);
+        y += 6;
+        pdf.setFont(undefined, 'normal');
+        pdf.setTextColor(60, 60, 60);
+      }
+
+      if (idx % 2 === 0) {
+        pdf.setFillColor(248, 249, 252);
+        pdf.rect(margin, y - 5, contentWidth, 7, 'F');
+      }
+
+      const percentage = Number.isFinite(r.percentage) ? r.percentage : 0;
+      const status = percentage >= 60 ? 'Passed' : 'Failed';
+      const color = percentage >= 80 ? [22, 163, 74] : percentage >= 60 ? [190, 110, 20] : [220, 38, 38];
+
+      pdf.setTextColor(60, 60, 60);
+      pdf.text((r.quizId?.title || 'Quiz').substring(0, 28), margin + 2, y - 1);
+      pdf.text(`${r.score}/${r.total}`, margin + 85, y - 1);
+      pdf.setTextColor(...color);
+      pdf.text(`${percentage}% ${status}`, margin + 115, y - 1);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text(new Date(r.createdAt).toLocaleDateString(), margin + 145, y - 1);
+
+      y += 7;
+    });
+
+    if (rows.length > 16) {
+      if (y > maxY - 10) {
+        y = addPage();
+      }
+      pdf.setFontSize(8);
+      pdf.setTextColor(110, 110, 110);
+      pdf.text(`... plus ${rows.length - 16} more attempts`, margin, y);
+      y += 8;
+    }
+
+    if (insight.weakAreas && insight.weakAreas.length > 0) {
+      if (y > maxY - 50) {
+        y = addPage();
+      }
+
+      pdf.setTextColor(20, 40, 115);
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Areas to Improve', margin, y);
+      y += 8;
+
+      insight.weakAreas.slice(0, 6).forEach((item, idx) => {
+        if (y > maxY - 12) {
+          y = addPage();
+        }
+
+        pdf.setFillColor(255, 244, 232);
+        pdf.setDrawColor(240, 176, 74);
+        pdf.setLineWidth(0.2);
+        pdf.rect(margin, y - 6, contentWidth, 10, 'FD');
+
+        pdf.setTextColor(155, 55, 0);
+        pdf.setFontSize(9);
+        pdf.setFont(undefined, 'bold');
+        pdf.text(`${idx + 1}. ${item.category}`, margin + 2, y - 1);
+
+        pdf.setTextColor(90, 90, 90);
+        pdf.setFontSize(8);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(`Average: ${item.avgPct}% · Attempts: ${item.attempts}`, margin + 2, y + 4);
+
+        y += 12;
+      });
+    }
+
+    if (y > maxY - 24) {
+      y = addPage();
+    }
+
+    pdf.setDrawColor(200, 210, 230);
+    pdf.setLineWidth(0.4);
+    pdf.rect(margin, y, contentWidth, 14, 'D');
+
+    pdf.setTextColor(20, 40, 115);
+    pdf.setFontSize(9);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Tips for improvement:', margin + 2, y + 5);
+
+    pdf.setTextColor(90, 90, 90);
+    pdf.setFontSize(7.5);
+    pdf.setFont(undefined, 'normal');
+    pdf.text('• Review weak categories regularly and retake quizzes.', margin + 2, y + 9);
+    pdf.text('• Aim for consistent practice to raise accuracy and pass rate.', margin + 2, y + 13);
+
+    addFooter();
+
+    const fileName = selectedCard === 'All'
+      ? `student-overall-quiz-report.pdf`
+      : `student-report-${selectedCard}.pdf`;
+
+    pdf.save(fileName);
+  } catch (e) {
+    console.error('Failed to generate student PDF', e);
+  }
+};
 
   const getCardIdFromCategory = (category) => {
     const card = CATEGORY_CARDS.find(c => c.title === category);
