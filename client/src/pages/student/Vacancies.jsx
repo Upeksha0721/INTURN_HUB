@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Spinner from '../../components/Spinner';
 
 const VACANCY_API = 'http://localhost:5002/api/vacancies';
@@ -232,14 +233,12 @@ export default function Vacancies() {
                         {selectedVacancy.applicationUrl}
                       </p>
 
-                      <a
-                        href={selectedVacancy.applicationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Link
+                        to={`/student/apply/${selectedVacancy._id}`}
                         className="inline-flex items-center justify-center w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all shadow-lg"
                       >
                         Proceed to Application
-                      </a>
+                      </Link>
                     </div>
                   ) : (
                     <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
@@ -475,13 +474,12 @@ export default function Vacancies() {
                   </div>
 
                   <div className="mt-auto">
-                    <button
-                      onClick={() => openVacancyDetails(vacancy)}
-                      disabled={isExpired(vacancy.deadline)}
-                      className="w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 shadow-lg"
+                    <Link
+                      to={`/student/apply/${vacancy._id}`}
+                      className={`inline-flex items-center justify-center w-full py-3.5 bg-gradient-to-r from-blue-800 to-orange-600 hover:from-blue-900 hover:to-orange-700 text-white font-bold rounded-xl transition-all shadow-lg ${isExpired(vacancy.deadline) ? 'opacity-50 pointer-events-none' : ''}`}
                     >
                       {isExpired(vacancy.deadline) ? 'Expired' : '🚀 Apply Now'}
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/student/Dashboard';
 import Vacancies from './pages/student/Vacancies';
 import Applications from './pages/student/Applications';
+import ApplyForm from './pages/student/ApplyForm';
 import StudyMaterials from './pages/student/StudyMaterials';
 import Quizzes from './pages/student/Quizzes';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -70,6 +71,9 @@ function AppRoutes() {
       } />
       <Route path="/student/applications" element={
         <ProtectedRoute><StudentLayout><Applications /></StudentLayout></ProtectedRoute>
+      } />
+      <Route path="/student/apply/:vacancyId" element={
+        <ProtectedRoute><StudentLayout><ApplyForm /></StudentLayout></ProtectedRoute>
       } />
       <Route path="/student/study-materials" element={
         <ProtectedRoute><StudentLayout><StudyMaterials /></StudentLayout></ProtectedRoute>

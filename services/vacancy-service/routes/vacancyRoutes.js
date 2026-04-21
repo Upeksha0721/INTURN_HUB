@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const vacancyController = require('../controllers/vacancyController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 // Admin create vacancy
 router.post('/', protect, adminOnly, vacancyController.createVacancy);
@@ -25,6 +26,6 @@ router.put('/:id', protect, adminOnly, vacancyController.updateVacancy);
 router.delete('/:id', protect, adminOnly, vacancyController.deleteVacancy);
 
 // User apply
-router.post('/:id/apply', protect, vacancyController.applyVacancy);
+router.post('/:id/apply', protect, upload.single('cv'), vacancyController.applyVacancy);
 
 module.exports = router;

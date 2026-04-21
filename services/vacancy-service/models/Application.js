@@ -15,6 +15,21 @@ const ApplicationSchema = new mongoose.Schema(
         ref: "Vacancy", 
         required: true 
     },
+    email: {
+      type: String,
+      required: true
+    },
+    phone: {
+      type: String,
+      required: true
+    },
+    coverLetter: {
+      type: String
+    },
+    cvUrl: {
+      type: String,
+      required: true
+    },
     status: {
       type: String,
       enum: ["pending", "accepted", "rejected"],

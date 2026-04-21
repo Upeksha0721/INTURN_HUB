@@ -298,10 +298,23 @@ const applyVacancy = async (req, res) => {
       });
     }
 
+    const { email, phone, coverLetter } = req.body;
+    const cvUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    if (!email || !phone || !cvUrl) {
+      return res.status(400).json({
+        message: 'Email, phone, and CV are required.'
+      });
+    }
+
     const newApplication = new Application({
       studentId,
       studentName,
-      vacancyId
+      vacancyId,
+      email,
+      phone,
+      coverLetter,
+      cvUrl
     });
 
     const savedApplication = await newApplication.save();
